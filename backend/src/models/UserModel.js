@@ -16,6 +16,10 @@ const userSchema = new Schema({
         type: String,
         enum: ['CLIENT','FREELANCER'],
         default: 'CLIENT'
+    },
+    isActive: {
+        type: Boolean,
+        default: true
     }
 })
 

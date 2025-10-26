@@ -3,13 +3,8 @@ const User = require('../models/UserModel')
 const ApiError = require(`../utils/ApiError`)
 const bcrypt = require(`bcrypt`)
 
-// login user
-const loginUser = async (req, res) => {
-    res.json({mssg: "login user"})
-}
-
 // signup user
-const signupUser = async (req, res) => {
+const createUser = async (req, res) => {
 
     // da aggiungere altri campi come Nome, Cognome ecc...
     const { email, password, role } = req.body
@@ -54,7 +49,6 @@ const deleteUser = async (req, res) => {
 
 module.exports = {
     // getUser, updateUser (se necessarie) ...
-    loginUser,
-    signupUser,
+    createUser,
     deleteUser
 }

@@ -1,5 +1,6 @@
 const express = require(`express`)
 const dotenv = require('dotenv')
+const cookieParser = require('cookie-parser')
 const Database = require('./config/database')
 
 dotenv.config()
@@ -10,7 +11,7 @@ const app = express()
 
 
 const userRoutes = require('./routes/user')
-
+const authRoutes = require('./routes/auth')
 
 // Database construction
 const db = new Database(process.env.MONGODB_URI)
@@ -21,9 +22,11 @@ db.connect().catch((err) => console.error(`Error connecting to DB:`, err))
 
 // middlewares
 app.use(express.json())
+app.use(cookieParser())
 
 
 // routes
+app.use(`/auth`, authRoutes)
 app.use(`/api/user`, userRoutes)
 
 
