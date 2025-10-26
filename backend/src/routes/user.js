@@ -1,8 +1,13 @@
 const express = require(`express`)
 const {
     loginUser,
-    signupUser
+    signupUser,
+    deleteUser
 } = require('../controllers/userController')
+
+const {
+    validateUser,
+} = require('../middlewares/userValidation')
 
 const router = express.Router()
 
@@ -10,7 +15,10 @@ const router = express.Router()
 router.post(`/login`, loginUser)
 
 // signup route
-router.post(`/signup`, signupUser)
+router.post(`/signup`, validateUser, signupUser)
+
+// delete route
+router.delete('/:id', deleteUser)
 
 // TO DO...
 

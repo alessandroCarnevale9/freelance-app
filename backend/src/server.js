@@ -26,6 +26,16 @@ app.use(express.json())
 // routes
 app.use(`/api/user`, userRoutes)
 
+
+// error handler *dopo* tutte le route
+app.use((err, req, res, next) => {
+  const status = err.statusCode || err.status || 500;
+  const message = err.message || 'Internal Server Error';
+  
+  if (status >= 500) console.error(err);
+    res.status(status).json({ error: message });
+})
+
 app.listen(PORT, () => {
     console.log(`The server is running on port ${PORT}`);
 })
