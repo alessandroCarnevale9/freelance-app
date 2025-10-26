@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 4000
 const app = express()
 
 
-const userRoute = require('./routes/user')
+const userRoutes = require('./routes/user')
 
 
 // Database construction
@@ -24,7 +24,7 @@ app.use(express.json())
 
 
 // routes
-app.use(`/api/user`, userRoute)
+app.use(`/api/user`, userRoutes)
 
 app.listen(PORT, () => {
     console.log(`The server is running on port ${PORT}`);
