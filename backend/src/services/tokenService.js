@@ -15,6 +15,10 @@ function generateRefreshToken(payload) {
   })
 }
 
+function verifyAccessToken(token) {
+  return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+}
+
 function verifyRefreshToken(token) {
   return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET)
 }
@@ -41,6 +45,7 @@ function clearRefreshTokenCookie(res) {
 module.exports = {
   generateAccessToken,
   generateRefreshToken,
+  verifyAccessToken,
   verifyRefreshToken,
   attachRefreshTokenCookie,
   clearRefreshTokenCookie,

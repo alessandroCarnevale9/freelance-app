@@ -1,4 +1,4 @@
-const { verifyRefreshToken } = require('../services/tokenService')
+const { verifyAccessToken } = require('../services/tokenService')
 const ApiError = require('../utils/ApiError')
 
 const verifyJWT = async (req, res, next) => {
@@ -11,7 +11,7 @@ const verifyJWT = async (req, res, next) => {
     const token = authHeader.split(' ')[1]
     let decoded
     try {
-        decoded = verifyRefreshToken(token)
+        decoded = verifyAccessToken(token)
     }
     catch {
         throw new ApiError(403, 'Invalid token')

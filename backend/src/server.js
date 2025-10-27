@@ -13,6 +13,8 @@ const app = express()
 const userRoutes = require('./routes/user')
 const authRoutes = require('./routes/auth')
 
+const testRoute = require('./routes/testAuthStuff')
+
 // Database construction
 const db = new Database(process.env.MONGODB_URI)
 
