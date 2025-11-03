@@ -1,0 +1,113 @@
+.home-page {
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.home-page-welcome {
+    background: linear-gradient(to right, #90BFE5, #E2F6EF);
+}
+
+.home-page-welcome p {
+    margin: 0;
+    padding: 5% 23%;
+    font-weight: 700;
+    font-size: 7vw;
+}
+
+.home-page-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 30px;
+    margin: 50px 0;
+}
+
+.home-page-buttons button {
+    min-width: 255px;
+    padding: 15px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+}
+
+.home-page-buttons button:first-child {
+    background-color: #CEE9ED;
+}
+
+.home-page-buttons button:last-child {
+    background-color: #D5D5D5;
+}
+
+.home-page-separator {
+    width: 100%;
+    height: 120px;
+    background-color: #E2F6EF;
+}
+
+.home-page-about h2 {
+    width: fit-content;
+    font-size: 3vw;
+    margin: 0 auto;
+    margin-top: 15px;
+}
+
+.about-circle {
+    position: absolute;
+    top: 0;
+    left: -10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: black;
+}
+
+.about-phase-1 {
+    margin: 0 15%;
+    display: flex;
+    gap: 300px;
+}
+
+.about-phase-1-icons {
+    position: relative;
+    border-left: 2px solid black;
+}
+
+.about-phase-1-text {
+    width: 300px;
+    padding-bottom: 10%;
+}
+
+.about-phase-1:last-child > .about-phase-1-text {
+    padding-bottom: 0;
+}
+
+.about-phase-1-info-icons {
+    width: 300px;
+    padding-top: 15%;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.about-phase-1-info-icons div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.about-phase-1-info-icons-multiblock {
+    width: 300px;
+    padding-top: 15%;
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
+
+.about-phase-1-info-icons-multiblock div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
