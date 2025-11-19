@@ -24,18 +24,62 @@
     cursor: pointer;
 }
 
-.links a {
-    margin: 0 15px;
-    text-decoration: none;
+.links {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
 }
 
-.links a:nth-child(1) {
-    color: #D5D5D5
+.logo-btn {
+    color: #D5D5D5;
+    cursor: pointer;
 }
 
-.links a:nth-child(2) {
+.registration-btn {
+    cursor: pointer;
     color: #000000;
     padding: 5px 15px;
     background-color: #D5D5D5;
     border-radius: 50px;
+}
+
+.registration-link {
+    position: relative;
+}
+
+.registration-dropdown-menu {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    top: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #D5D5D5;
+    border-radius: 10px;
+    padding: 5px 10px;
+}
+
+.registration-dropdown-menu div {
+    cursor: pointer;
+}
+
+.registration-dropdown-menu > div + div {
+    border-left: 1px solid black; /* separator */
+    margin-left: 10px;   /* gap between border and previous item */
+    padding-left: 10px;  /* space after border */
+}
+
+.registration-dropdown-menu::before {
+    content: "";
+    position: absolute;
+    top: -6px; /* adjust to move triangle closer/farther from the menu */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #D5D5D5; /* same color as the menu */
+    pointer-events: none;
 }
