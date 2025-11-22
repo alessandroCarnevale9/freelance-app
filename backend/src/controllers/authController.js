@@ -1,6 +1,8 @@
 const User = require('../models/UserModel')
 const ApiError = require('../utils/ApiError')
 const bcrypt = require('bcrypt')
+const crypto = require('crypto');
+const ethers = require('ethers');
 
 const {
     generateAccessToken,
@@ -82,8 +84,40 @@ const logout = async (req, res) => {
     res.sendStatus(204)
 }
 
+// login w metamask
+const nonce = async (req, res) => {
+    const nonce = crypto.randomBytes(32).toString('hex');
+
+    res.json({ nonce });
+}
+
+const metamaskSignup = async (req, res) => {
+    console.log("Signup request body:", req.body);
+    const { address, nickname, role, signedMessage, message } = req.body
+
+    const recovedeAddress = ethers.utils.verifyMessage(message, signedMessage);
+    
+    if (recovedeAddress.toLowerCase() !== address.toLowerCase()) {
+        throw new ApiError(401, 'Signature verification failed');
+    }
+
+    const existing = await User.findOne({   address: address.toLowerCase().trim() }).exec()
+
+    if(existing)
+        throw new ApiError(409, `User with address ${address} already exists.`)
+
+    try {
+        const user = await User.create({ address, nickname, role: role ? role.toUpperCase() : undefined, isActive: true })
+        res.status(201).json({ user })
+    } catch (error) {
+        res.json({ error: error.message })
+    }
+} 
+
 module.exports = {
     login,
     refresh,
-    logout
+    logout,
+    nonce,
+    metamaskSignup
 }

@@ -1,5 +1,5 @@
 const express = require('express')
-const {login, refresh, logout} = require('../controllers/authController')
+const {login, refresh, logout, nonce, metamaskLogin, metamaskSignup} = require('../controllers/authController')
 const loginLimiter = require('../middlewares/loginLimiter')
 
 const router = express.Router()
@@ -7,5 +7,8 @@ const router = express.Router()
 router.post('/', loginLimiter, login)
 router.get('/refresh', refresh)
 router.post('/logout', logout)
+
+router.get('/nonce', nonce)
+router.post('/signup', metamaskSignup)
 
 module.exports = router
