@@ -4,6 +4,7 @@
      width: 100%;
      background-color: #494747;
      padding: 5px 0;
+     z-index: 100;
  }
 
  .nav-bar-inner {
