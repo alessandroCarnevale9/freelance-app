@@ -64,12 +64,13 @@
 
 .about-phase-1 {
     margin: 0 15%;
-    display: flex;
-    gap: 300px;
+    display: inline-flex;
+    gap: 200px;
 }
 
 .about-phase-1-icons {
     position: relative;
+    z-index: -1;
     border-left: 2px solid black;
 }
 

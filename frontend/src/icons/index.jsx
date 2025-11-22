@@ -178,7 +178,7 @@ export const PainterIcon = ({ width = 67, height = 68, ...props }) => (
   </svg>
 );
 
-export const CrossIcon = ({ width = 30, height = 30, ...props }) => (
+export const CrossIcon = ({ width = 30, height = 30, fill="black", ...props }) => (
   <svg
     width={width}
     height={height}
@@ -192,7 +192,7 @@ export const CrossIcon = ({ width = 30, height = 30, ...props }) => (
         fill-rule="evenodd"
         clip-rule="evenodd"
         d="M0 27.2719L2.72813 30L15 17.7281L27.2719 30L30 27.2719L17.7281 15L30 2.72813L27.2719 0L15 12.2719L2.72813 0L0 2.72813L12.2719 15L0 27.2719Z"
-        fill="black"
+        fill={fill}
       />
     </g>
     <defs>
@@ -263,6 +263,25 @@ export const UploadIcon = ({ width = 67, height = 68, ...props }) => (
       clip-rule="evenodd"
       d="M23.9681 21.9867L31.2667 13.0107V45.3288C31.2667 46.5845 32.265 47.6 33.5 47.6C34.735 47.6 35.7333 46.5845 35.7333 45.3288V12.9246L43.1011 21.9867C43.9744 22.882 45.3947 22.882 46.2724 21.9867C47.1457 21.0959 47.1457 19.6474 46.2724 18.7544L35.2331 5.17485C34.7641 4.69885 34.1454 4.49478 33.5357 4.52878C32.9238 4.49478 32.3051 4.69885 31.8384 5.17485L20.799 18.7544C19.9235 19.6474 19.9235 21.0959 20.799 21.9867C21.6745 22.882 23.0949 22.882 23.9681 21.9867ZM64.7667 40.8C63.5316 40.8 62.5333 41.8155 62.5333 43.0667V58.9333H4.46667V43.0667C4.46667 41.8155 3.46837 40.8 2.23333 40.8C0.9983 40.8 0 41.8155 0 43.0667V61.2C0 62.4535 0.9983 63.4667 2.23333 63.4667H64.7667C66.0017 63.4667 67 62.4535 67 61.2V43.0667C67 41.8155 66.0017 40.8 64.7667 40.8Z"
       fill="black"
+    />
+  </svg>
+);
+
+export const HamburgerMenu = ({ width = 35, height = 35, ...props }) => (
+  <svg
+    width={width}
+    height={height}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path
+      d="M4 6H20M4 12H20M4 18H20"
+      stroke="#EEEEEE"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
     />
   </svg>
 );
