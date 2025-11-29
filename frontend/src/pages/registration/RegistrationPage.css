@@ -1,0 +1,284 @@
+.registration-page {
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 20px;
+  flex: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to right, #90BFE5, #E2F6EF);
+}
+
+.registration-page-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 800px;
+  max-width: 90%;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 20px;
+}
+
+.registration-page-form-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.registration-page-form-projects-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.registration-page-form textarea {
+    width: 60%;
+    height: 140px;
+    max-height: 220px;
+    overflow-y: auto;
+    resize: none;
+    box-sizing: border-box;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    background-color: transparent;
+}
+
+.registration-page-form p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.input-field {
+  width: 95%;
+  padding: 10px;
+  margin: 10px 0 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: transparent;
+}
+
+.input-error {
+  border-color: #e53935 !important;
+  width: 95%;
+  padding: 10px;
+  margin-bottom: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: transparent;
+}
+
+.message-error {
+  color: #e53935;
+  font-size: 13px;
+  margin-bottom: 15px;
+}
+
+.title-error {
+  color: #e53935!important;
+}
+
+.skills-list {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.skill-tag {
+  background: rgba(0,0,0,0.06);
+  padding: 6px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.skill-remove {
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.skill-remove:focus {
+  outline: 2px solid rgba(0,0,0,0.1);
+}
+
+.registration-page-form-skills-input input {
+  width: 30%;
+}
+
+.registration-page-form-skills-add-btn {
+  font-size: 14px;
+  height: min-content;
+  align-self: center;
+  padding: 10px;
+  margin-left: 8px;
+  font-weight: bold;
+  background-color: #D5D5D5;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.project-image-placeholder {
+  align-self: flex-start;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+}
+
+.preview-image-wrapper {
+  position: relative;
+  display: inline-block;
+  width: max-content;
+}
+
+.preview-image {
+  display: block;
+  width: 320px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  z-index: 0;
+}
+
+.preview-remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 20;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.preview-remove-btn:focus {
+  outline: 2px solid rgba(255,255,255,0.25);
+}
+
+.preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.preview-item {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.04);
+}
+
+.preview-item .preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.project-container {
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+}
+
+.project-container-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.remove-project-item {
+  color: red;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.preview-remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 20;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.add-image-to-existing {
+  width: 200px;
+  height: 200px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.btn-add-project {
+  padding: 15px 30px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #D5D5D5;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.btn-submit-registration {
+  margin-top: 20px;
+  padding: 12px 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #90BFE5;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}

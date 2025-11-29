@@ -4,6 +4,7 @@
     width: 100%;
     background-color: #494747;
     padding: 5px 0;
+    z-index: 9999;
 }
 
 .nav-bar-inner {
@@ -60,11 +61,13 @@
     padding: 5px 10px;
 }
 
-.registration-dropdown-menu div {
+.registration-dropdown-menu-item {
+    text-decoration: none;
+    color: black;
     cursor: pointer;
 }
 
-.registration-dropdown-menu > div + div {
+.registration-dropdown-menu > .registration-dropdown-menu-item + .registration-dropdown-menu-item {
     border-left: 1px solid black; /* separator */
     margin-left: 10px;   /* gap between border and previous item */
     padding-left: 10px;  /* space after border */

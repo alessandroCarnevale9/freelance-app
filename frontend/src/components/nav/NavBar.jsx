@@ -2,6 +2,7 @@ import "./NavBar.css";
 import Modal from "../modal/Modal.jsx";
 import {useState, useRef, useEffect} from "react";
 import { ethers } from "ethers";
+import {Link} from "react-router-dom";
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -80,8 +81,8 @@ const NavBar = () => {
               </div>
               {isMenuOpen &&
                 <div className="registration-dropdown-menu">
-                  <div>Freelancer</div>
-                  <div onClick={() => setShowRegistrationModal(true)}>Cliente</div>
+                  <Link className="registration-dropdown-menu-item" to="/registration" onClick={() => setIsMenuOpen(false)}>Freelancer</Link>
+                  <div className="registration-dropdown-menu-item" onClick={() => {setShowRegistrationModal(true); setIsMenuOpen(false)}}>Cliente</div>
                 </div>
               }
               </div>    

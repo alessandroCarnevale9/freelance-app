@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { GridFSBucket } = require('mongodb');
 mongoose.set('strictQuery', false)
 
 class Database {
@@ -7,12 +8,17 @@ class Database {
     this.options = options
   }
 
-  async connect() {
+  async connect(_bucketName) {
     try {
       await mongoose.connect(this.uri, this.options)
       console.log(
         `Connected to database: ${mongoose.connection.db.databaseName}`
       )
+      const db = mongoose.connection.db;
+      console.log('Database object:');
+      return new GridFSBucket(db, {
+          bucketName: _bucketName
+      });
     } catch (error) {
       throw error
     }
