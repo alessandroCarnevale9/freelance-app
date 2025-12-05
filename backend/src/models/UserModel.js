@@ -29,7 +29,21 @@ const userSchema = new Schema({
         type: Boolean,
         default: true
     },
-    projects: [ProjectSchema]
+    projects: {
+        type: [ProjectSchema],
+        default: [],
+        validate: {
+            validator: function(projects) {
+                if(!projects || projects.length === 0) return true;
+                return projects.every(p => {
+                    const hastTitle = typeof p.title === 'string' && p.title.trim() !== '';
+                    const hasDescription = typeof p.description === 'string' && p.description.trim() !== '';
+                    return hastTitle && hasDescription;
+                })
+                message: 'Ogni progetto deve avere title e description quando viene fornito' 
+            }
+        }
+    }
 })
 
 module.exports = mongoose.model('User', userSchema)

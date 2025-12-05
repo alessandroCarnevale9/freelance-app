@@ -151,7 +151,20 @@ const metamaskSignup = async (req, res) => {
 
     try {
         const user = await User.create({ address, nickname, role: role ? role.toUpperCase() : undefined, isActive: true })
-        res.status(201).json({ user })
+        
+        const payload = {
+        UserInfo: {
+            id: user._id.toString(),
+            address: user.address,
+            role: user.role
+          }
+        }
+
+        const accessToken = generateAccessToken(payload)
+        const refreshToken = generateRefreshToken(payload)
+        attachRefreshTokenCookie(res, refreshToken)
+
+        res.status(201).json({ accessToken })
     } catch (error) {
         res.json({ error: error.message })
     }
@@ -203,21 +216,9 @@ const freelancerSignup = (bucket) => {
       });
     }
 
-    if (!title) {
-      return res.status(400).json({
-        error: 'Titolo mancante'
-      });
-    }
-
     if (!skills || skills.length === 0) {
       return res.status(400).json({
         error: 'Competenze mancanti'
-      });
-    }
-
-    if (!files) {
-      return res.status(400).json({
-        error: 'Nessun file caricato'
       });
     }
 
@@ -262,16 +263,40 @@ const freelancerSignup = (bucket) => {
         })
       }
 
-      const newUser = new User({
-        address: recovedeAddress.toLowerCase().trim(),
-        nickname,
-        role,
-        skills,
-        projects: processedProjects
-      })
+      const newUserCreation = processedProjects.length !== 0 ? async () => {
+          return await User.create({
+            address: recovedeAddress.toLowerCase().trim(),
+            nickname,
+            role,
+            skills,
+            projects: processedProjects
+          })
+      } : async () => {
+         return await User.create({
+            address: recovedeAddress.toLowerCase().trim(),
+            nickname,
+            role,
+            skills
+          })
+      }
 
-      await newUser.save();
-      res.status(201).json({ message: "Registrazione con progetti multipli completata!" });
+      const newUser = await newUserCreation();
+
+      console.log('newUser:', newUser);
+
+      const payload = {
+        UserInfo: {
+            id: newUser._id.toString(),
+            address: newUser.address,
+            role: newUser.role
+          }
+        }
+
+        const accessToken = generateAccessToken(payload)
+        const refreshToken = generateRefreshToken(payload)
+        attachRefreshTokenCookie(res, refreshToken)
+
+        res.status(201).json({ accessToken })
     } catch (err) {
       console.error("Errore:", err);
 

@@ -67,6 +67,12 @@ const RegistrationPage = () => {
     setProjects(updatedProjects);
   };
 
+  const isProjectEmpty = (p) =>
+  !p.title?.trim() &&
+  !p.description?.trim() &&
+  !p.link?.trim() &&
+  (!p.files || p.files.length === 0);
+
   const handleProjectFileChange = (index, e) => {
     const selectedFiles = Array.from(e.target.files || []);
     if (selectedFiles.length === 0) return;
@@ -130,6 +136,8 @@ const RegistrationPage = () => {
       const role = "freelancer";
       const signedMessage = await signer.signMessage(nonce);
 
+      const nonEmptyProjects = projects.filter(p => !isProjectEmpty(p));
+
       const payload = {
       address: address,
       nickname: name,
@@ -138,7 +146,7 @@ const RegistrationPage = () => {
       nonce: nonce,
       title: titles,
       skills: keyskills,
-      projects: projects.map(p => ({
+      projects: nonEmptyProjects.map(p => ({
         title: p.title,
         description: p.description,
         link: p.link

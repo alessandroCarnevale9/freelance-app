@@ -15,7 +15,7 @@ class Database {
         `Connected to database: ${mongoose.connection.db.databaseName}`
       )
       const db = mongoose.connection.db;
-      console.log('Database object:');
+  
       return new GridFSBucket(db, {
           bucketName: _bucketName
       });
