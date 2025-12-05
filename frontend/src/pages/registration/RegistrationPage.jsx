@@ -128,15 +128,14 @@ const RegistrationPage = () => {
       const signer = provider.getSigner();
       const address = await signer.getAddress();
       const role = "freelancer";
-      const message = `I am signing this message to prove my identity. Nonce: ${nonce}`;
-      const signedMessage = await signer.signMessage(message);
+      const signedMessage = await signer.signMessage(nonce);
 
       const payload = {
       address: address,
       nickname: name,
       role: role.toUpperCase(),
       signedMessage: signedMessage,
-      message: message,
+      nonce: nonce,
       title: titles,
       skills: keyskills,
       projects: projects.map(p => ({
@@ -163,11 +162,9 @@ const RegistrationPage = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('Registrazione completata:', data);
-        alert("Registrazione avvenuta con successo!");
       } else {
         const errData = await response.json();
         console.error('Errore:', errData);
-        alert("Errore durante la registrazione: " + errData.error);
       }
     } catch (error) {
       console.error('Errore di rete:', error);

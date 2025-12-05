@@ -13,6 +13,8 @@ const {
     clearRefreshTokenCookie
 } = require('../services/tokenService')
 
+released_nonce = []
+
 // login user
 const login = async (req, res) => {
     const { email, password } = req.body
@@ -88,7 +90,7 @@ const logout = async (req, res) => {
 // login w metamask
 const nonce = async (req, res) => {
     const nonce = crypto.randomBytes(32).toString('hex');
-
+    released_nonce.push(nonce)
     res.json({ nonce });
 }
 
@@ -128,9 +130,15 @@ const uploadFile = (bucket, files, customId) => {
 
 const metamaskSignup = async (req, res) => {
 
-    const { address, nickname, role, signedMessage, message } = req.body
+    const { address, nickname, role, signedMessage, nonce } = req.body
 
-    const recovedeAddress = ethers.utils.verifyMessage(message, signedMessage);
+    if (released_nonce.includes(nonce)) {
+      released_nonce = released_nonce.filter(n => n !== nonce)
+    } else {
+      res.json({ success: false, message: 'Invalid nonce' })
+    }
+
+    const recovedeAddress = ethers.utils.verifyMessage(nonce, signedMessage);
     
     if (recovedeAddress.toLowerCase() !== address.toLowerCase()) {
         throw new ApiError(401, 'Signature verification failed');
@@ -155,7 +163,13 @@ const freelancerSignup = (bucket) => {
     if(!req.body.data) throw new Error('Missing form data');
     const formData = JSON.parse(req.body.data);
 
-    const { address, nickname, title, role, signedMessage, message, skills, projects } = formData
+    const { address, nickname, title, role, signedMessage, skills, projects, nonce } = formData
+
+    if (released_nonce.includes(nonce)) {
+      released_nonce = released_nonce.filter(n => n !== nonce)
+    } else {
+      res.json({ success: false, message: 'Invalid nonce' })
+    }
 
     const files = req.files;
 
@@ -177,9 +191,9 @@ const freelancerSignup = (bucket) => {
       });
     }
 
-    if (!message || !signedMessage) {
+    if (!signedMessage) {
       return res.status(400).json({
-        error: 'Messaggio o firma mancante'
+        error: 'Firma mancante'
       });
     }
 
@@ -213,57 +227,7 @@ const freelancerSignup = (bucket) => {
       });
     }
 
-    // const recovedeAddress = ethers.utils.verifyMessage(message, signedMessage);
-    
-    // if (recovedeAddress.toLowerCase() !== address.toLowerCase()) {
-    //     throw new ApiError(401, 'Signature verification failed');
-    // }
-
-    // // --- STREAM MANUALE VERSO GRIDFS ---
-
-    // // 1. Convertiamo il buffer (RAM) in uno stream leggibile
-    // const readableStream = new Readable();
-    // readableStream.push(req.file.buffer);
-    // readableStream.push(null); // Indica la fine dello stream
-
-    // // 2. Apriamo lo stream di upload verso Mongo
-    // const uploadStream = bucket.openUploadStream(req.file.originalname, {
-    //   id: customId, // <--- Assegnazione ID manuale qui (SICURA)
-    //   metadata: {
-    //     contentType: req.file.mimetype,
-    //     size: req.file.size
-    //   }
-    // });
-
-    // // 3. Colleghiamo (Pipe) lo stream di lettura a quello di scrittura
-    // readableStream.pipe(uploadStream);
-
-    // // 4. Gestione Eventi
-    // uploadStream.on('error', (err) => {
-    //   console.error(err);
-    //   // Gestione specifica per chiave duplicata
-    //   if (err.code === 11000) {
-    //     return res.status(409).json({
-    //       error: 'ID immagine già esistente!'
-    //     });
-    //   }
-    //   return res.status(500).json({
-    //     error: 'Errore durante il salvataggio'
-    //   });
-    // });
-
-    // uploadStream.on('finish', () => {
-    //   // Tutto andato a buon fine
-    //   res.json({
-    //     message: "Upload completato con successo",
-    //     file: {
-    //       id: uploadStream.id, // Questo è l'ID che hai passato tu
-    //       filename: req.file.originalname
-    //     }
-    //   });
-    // });
-
-    const recovedeAddress = ethers.utils.verifyMessage(message, signedMessage);
+    const recovedeAddress = ethers.utils.verifyMessage(nonce, signedMessage);
 
     if (recovedeAddress.toLowerCase() !== address.toLowerCase()) {
         throw new ApiError(401, 'Signature verification failed');

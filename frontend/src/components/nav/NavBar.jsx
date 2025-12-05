@@ -52,9 +52,8 @@ const NavBar = () => {
       const signer = provider.getSigner();
       const address = await signer.getAddress();
       const role = "client";
-      const message = `I am signing this message to prove my identity. Nonce: ${nonce}`;
-      const signedMessage = await signer.signMessage(message);
-      const data = { address, nickname, role, signedMessage, message };
+      const signedMessage = await signer.signMessage(nonce);
+      const data = { address, nickname, role, signedMessage, nonce };
       
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
