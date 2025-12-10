@@ -2,6 +2,7 @@ import './RegistrationPage.css';
 import { useState, useEffect, useRef } from 'react';
 import { AddImage } from '@icons';
 import { ethers } from "ethers";
+import { useAuthContext } from '../../hooks/useAuthContext'
 
 const RegistrationPage = () => {
 
@@ -29,6 +30,8 @@ const RegistrationPage = () => {
       });
     };
   }, []);
+
+  const { dispatch } = useAuthContext()
 
   const getNonce = async () => {
     const response = await fetch('/api/auth/nonce');
@@ -169,7 +172,15 @@ const RegistrationPage = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Registrazione completata:', data);
+        
+        // *** Salva user info + jwt ***
+        localStorage.setItem('jwt', JSON.stringify(data));
+       
+        // *** Aggiorna auth context ***
+        dispatch({type: 'LOGIN', payload: data});
+        
+        console.log('Registrazione completata');
+      
       } else {
         const errData = await response.json();
         console.error('Errore:', errData);
@@ -335,6 +346,8 @@ const RegistrationPage = () => {
       </div>
     </div>
   );
+
+  // *** AGGIUNGERE REDIRECT ALLA HOME PAGE DELL'UTENETE ***
 }
 
 export default RegistrationPage;

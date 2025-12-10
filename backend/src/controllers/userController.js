@@ -4,31 +4,33 @@ const ApiError = require(`../utils/ApiError`)
 const bcrypt = require(`bcrypt`)
 
 // signup user
-const createUser = async (req, res) => {
+// const createUser = async (req, res) => {
 
-    // da aggiungere altri campi come Nome, Cognome ecc...
-    const { email, password, role } = req.body
+//     // da aggiungere altri campi come Nome, Cognome ecc...
+//     const { email, password, role } = req.body
 
-    // validazione dei campi usando il middleware userValidation.js...
+//     // validazione dei campi usando il middleware userValidation.js...
 
-    const existing = await User.findOne({
-        email: email.toLowerCase().trim()
-    }).exec()
+//     const existing = await User.findOne({
+//         email: email.toLowerCase().trim()
+//     }).exec()
 
-    if(existing)
-        throw new ApiError(409, `User with email ${email} already exists.`)
+//     if(existing)
+//         throw new ApiError(409, `User with email ${email} already exists.`)
 
-    // password hash
-    const salt = await bcrypt.genSalt(10)
-    const passwordHash = await bcrypt.hash(password, salt)
+//     // password hash
+//     const salt = await bcrypt.genSalt(10)
+//     const passwordHash = await bcrypt.hash(password, salt)
 
-    try {
-        const user = await User.create({ email, password: passwordHash, role})
-        res.status(201).json({ user /*,access token*/ })
-    } catch (error) {
-        res.json({ error: error.message })
-    }
-}
+//     try {
+//         const user = await User.create({ email, password: passwordHash, role})
+//         res.status(201).json({ user /*,access token*/ })
+//     } catch (error) {
+//         res.json({ error: error.message })
+//     }
+// }
+
+
 
 const deleteUser = async (req, res) => {
     const { id } = req.params
@@ -49,6 +51,6 @@ const deleteUser = async (req, res) => {
 
 module.exports = {
     // getUser, updateUser (se necessarie) ...
-    createUser,
+    // createUser,
     deleteUser
 }

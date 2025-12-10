@@ -1,6 +1,6 @@
 const express = require(`express`)
 const {
-    createUser,
+    // createUser,
     deleteUser
 } = require('../controllers/userController')
 
@@ -11,7 +11,7 @@ const {
 const router = express.Router()
 
 // signup route
-router.post(`/signup`, validateUser, createUser)
+router.post(`/signup`, validateUser, /* createUser */)
 
 // delete route
 router.delete('/:id', deleteUser)

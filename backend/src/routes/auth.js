@@ -2,7 +2,8 @@ const express = require('express')
 const multer = require('multer');
 
 const {
-  login,
+  // login,
+  metamaskLogin,
   refresh,
   logout,
   nonce,
@@ -19,7 +20,7 @@ module.exports = (bucket) => {
     storage
   });
 
-  router.post('/', loginLimiter, login)
+  router.post('/login', loginLimiter, /*login*/metamaskLogin)
   router.get('/refresh', refresh)
   router.post('/logout', logout)
 
