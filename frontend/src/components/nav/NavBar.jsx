@@ -10,9 +10,14 @@ const NavBar = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  // Eliminato showLoginModal
   const [loading, setLoading] = useState(false);
   const menuRef = useRef(null);
+
+  // Variabile 'nickname' usata in handleSignupClientClick ma non dichiarata nel codice fornito
+  // L'ho inizializzata qui con un valore fittizio per evitare errori, ma andrebbe gestita correttamente
+  // se la registrazione/login richiedessero un nickname nell'interfaccia.
+  const [nickname] = useState("");
 
   const { dispatch } = useAuthContext();
 
@@ -42,7 +47,7 @@ const NavBar = () => {
       return data.nonce;
     } catch (error) {
       console.error("Errore getNonce:", error);
-      alert("Errore di connessione al server");
+      // alert("Errore di connessione al server");
       throw error;
     }
   };
@@ -67,7 +72,8 @@ const NavBar = () => {
 
   const handleSignupClientClick = async () => {
     if (!nickname.trim()) {
-      alert("Inserisci un nickname valido");
+      console.log("Inserisci un nickname valido");
+      // alert("Inserisci un nickname valido");
       return;
     }
 
@@ -110,12 +116,8 @@ const NavBar = () => {
     }
   };
 
+  // Funzione di login modificata per eseguire il login diretto (senza modale)
   const handleLoginClick = async () => {
-    // if (!nickname.trim()) {
-    //   alert("Inserisci un nickname valido");
-    //   return;
-    // }
-
     setLoading(true);
     try {
       const { address, nonce, signedMessage } = await connectWalletAndSign();
@@ -135,10 +137,7 @@ const NavBar = () => {
               data.message || "Dati mancanti. Controlla i campi."
             );
           case 401:
-            throw new Error(
-              data.message ||
-                "Autenticazione fallita."
-            );
+            throw new Error(data.message || "Autenticazione fallita.");
           case 404:
             throw new Error(
               data.message || "Utente non trovato. Registrati prima."
@@ -176,7 +175,7 @@ const NavBar = () => {
       <div className="nav-bar-inner">
         <h3 className="logo">FreelanceHub</h3>
         <div className="links">
-          <div className="logo-btn" onClick={() => setShowLoginModal(true)}>
+          <div className="logo-btn" onClick={handleLoginClick}>
             Login
           </div>
           <div className="registration-link" ref={menuRef}>
@@ -219,20 +218,15 @@ const NavBar = () => {
         mode="register"
       />
 
-      <Modal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onSubmit={handleLoginClick}
-        mode="login"
-      />
-
-      {loading && (
+      {/* {loading && (
         <div className="loading-overlay">
           <div className="spinner">
-            {showLoginModal ? "Login in corso..." : "Registrazione in corso..."}
+            {showRegistrationModal
+              ? "Registrazione in corso..."
+              : "Login in corso..."}
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
