@@ -17,7 +17,7 @@ const NavBar = () => {
 
   const [nickname, setNickname] = useState("");
 
-  const { dispatch } = useAuthContext();
+  const { user, dispatch } = useAuthContext();
 
   // Funzione per aggiungere un toast
   const addToast = (message, type = "error") => {
@@ -190,6 +190,11 @@ const NavBar = () => {
     }
   };
 
+  const handleLogoutClick = async () => {
+    localStorage.removeItem("jwt");
+    dispatch({ type: "LOGOUT" });
+  };
+
   // --- Rendering del Componente ---
 
   return (
@@ -197,47 +202,62 @@ const NavBar = () => {
       <div className="nav-bar-inner">
         <h3 className="logo">FreelanceHub</h3>
         <div className="links">
-          {/* Bottone Login */}
-          <button
-            className="logo-btn"
-            onClick={handleLoginClick}
-            disabled={loading}
-          >
-            Login
-          </button>
-
-          {/* Dropdown Registrazione */}
-          <div className="registration-link" ref={menuRef}>
-            {location.pathname !== "/registration" && (
+          {/* Blocchi Login/Registrazione (Se NON loggato) */}
+          {!user && (
+            <>
               <button
-                className="registration-btn"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="logo-btn"
+                onClick={handleLoginClick}
                 disabled={loading}
               >
-                Registrati
+                Login
               </button>
-            )}
-            {isMenuOpen && (
-              <div className="registration-dropdown-menu">
-                <Link
-                  className="registration-dropdown-menu-item"
-                  to="/registration"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Freelancer
-                </Link>
-                <div
-                  className="registration-dropdown-menu-item"
-                  onClick={() => {
-                    setShowRegistrationModal(true);
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  Cliente
-                </div>
+
+              {/* Dropdown Registrazione */}
+              <div className="registration-link" ref={menuRef}>
+                {location.pathname !== "/registration" && (
+                  <button
+                    className="registration-btn"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    disabled={loading}
+                  >
+                    Registrati
+                  </button>
+                )}
+                {isMenuOpen && (
+                  <div className="registration-dropdown-menu">
+                    <Link
+                      className="registration-dropdown-menu-item"
+                      to="/registration"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Freelancer
+                    </Link>
+                    <div
+                      className="registration-dropdown-menu-item"
+                      onClick={() => {
+                        setShowRegistrationModal(true);
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      Cliente
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
+
+          {/* Bottone Logout (Se loggato) */}
+          {user && (
+            <button
+              className="logout-btn"
+              onClick={handleLogoutClick}
+              disabled={loading}
+            >
+              Log out
+            </button>
+          )}
         </div>
       </div>
 
