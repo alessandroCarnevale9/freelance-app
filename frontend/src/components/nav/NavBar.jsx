@@ -1,5 +1,6 @@
 import "./NavBar.css";
 import Modal from "../modal/Modal.jsx";
+import Toast from "../toast/Toast.jsx";
 import { useState, useRef, useEffect } from "react";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { ethers } from "ethers";
@@ -10,19 +11,28 @@ const NavBar = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
-  // Eliminato showLoginModal
   const [loading, setLoading] = useState(false);
+  const [toasts, setToasts] = useState([]);
   const menuRef = useRef(null);
 
-  // Variabile 'nickname' usata in handleSignupClientClick ma non dichiarata nel codice fornito
-  // L'ho inizializzata qui con un valore fittizio per evitare errori, ma andrebbe gestita correttamente
-  // se la registrazione/login richiedessero un nickname nell'interfaccia.
-  const [nickname] = useState("");
+  const [nickname, setNickname] = useState("");
 
   const { dispatch } = useAuthContext();
 
+  // Funzione per aggiungere un toast
+  const addToast = (message, type = "error") => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+
+  // Funzione per rimuovere un toast
+  const removeToast = (id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
   useEffect(() => {
     const handleClickOutside = (e) => {
+      // Controlla se il menu è aperto E se il click è fuori dal menu
       if (
         isMenuOpen &&
         menuRef.current &&
@@ -31,13 +41,17 @@ const NavBar = () => {
         setIsMenuOpen(false);
       }
     };
+    // Aggiunge gli ascoltatori di eventi
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
+    // Rimuove gli ascoltatori di eventi al cleanup
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [isMenuOpen]);
+
+  // --- Funzioni di Autenticazione ---
 
   const getNonce = async () => {
     try {
@@ -47,37 +61,46 @@ const NavBar = () => {
       return data.nonce;
     } catch (error) {
       console.error("Errore getNonce:", error);
-      // alert("Errore di connessione al server");
+      addToast("Errore di connessione al server.", "error");
       throw error;
     }
   };
 
   const connectWalletAndSign = async () => {
     if (!window.ethereum) {
-      alert(
-        "Per continuare devi installare MetaMask!\n\nVisita: https://metamask.io"
+      addToast(
+        "Per continuare devi installare MetaMask! Visita: https://metamask.io",
+        "error"
       );
       throw new Error("MetaMask non installato");
     }
 
+    // Assicurati che l'utente abbia dato il consenso
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
+
     const signer = provider.getSigner();
     const address = await signer.getAddress();
     const nonce = await getNonce();
+
+    // Firma il nonce per l'autenticazione
     const signedMessage = await signer.signMessage(nonce);
 
     return { address, nonce, signedMessage };
   };
 
-  const handleSignupClientClick = async () => {
-    if (!nickname.trim()) {
-      console.log("Inserisci un nickname valido");
-      // alert("Inserisci un nickname valido");
+  const handleSignupClientClick = async (nicknameValue) => {
+    // Aggiorna il nickname se proviene dalla modale
+    const currentNickname = nicknameValue || nickname;
+
+    if (!currentNickname.trim()) {
+      addToast("Inserisci un nickname valido", "error");
       return;
     }
 
+    setNickname(currentNickname); // Aggiorna lo stato anche se proviene dal parametro
     setLoading(true);
+
     try {
       const { address, nonce, signedMessage } = await connectWalletAndSign();
 
@@ -86,7 +109,7 @@ const NavBar = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           address,
-          nickname,
+          nickname: currentNickname,
           role: "client",
           signedMessage,
           nonce,
@@ -99,24 +122,29 @@ const NavBar = () => {
         throw new Error(data.message || "Registrazione fallita");
       }
 
+      // Login di successo
       localStorage.setItem("jwt", JSON.stringify(data));
       dispatch({ type: "LOGIN", payload: data });
+      addToast("Registrazione completata con successo!", "success");
+      setShowRegistrationModal(false);
       navigate("/dashboard");
     } catch (error) {
       console.error("Errore registrazione:", error);
       if (error.code === 4001) {
-        alert("Hai rifiutato la firma su MetaMask");
+        addToast("Hai rifiutato la firma su MetaMask.", "error");
       } else if (error.message.includes("already exists")) {
-        alert("Questo wallet è già registrato! Prova a fare login.");
+        addToast(
+          "Questo wallet è già registrato! Prova a fare login.",
+          "error"
+        );
       } else {
-        alert(`Errore: ${error.message}`);
+        addToast(`Errore: ${error.message}`, "error");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // Funzione di login modificata per eseguire il login diretto (senza modale)
   const handleLoginClick = async () => {
     setLoading(true);
     try {
@@ -125,67 +153,69 @@ const NavBar = () => {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, /*nickname,*/ signedMessage, nonce }),
+        body: JSON.stringify({ address, signedMessage, nonce }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        switch (response.status) {
-          case 400:
-            throw new Error(
-              data.message || "Dati mancanti. Controlla i campi."
-            );
-          case 401:
-            throw new Error(data.message || "Autenticazione fallita.");
-          case 404:
-            throw new Error(
-              data.message || "Utente non trovato. Registrati prima."
-            );
-          default:
-            throw new Error(data.message || "Errore durante il login.");
+      if (!response.ok || data.success === false) {
+        // Gestione degli errori basata sullo stato e/o messaggio
+        let errorMessage = data.message || "Errore durante il login.";
+        if (response.status === 404) {
+          errorMessage = "Utente non trovato. Registrati prima.";
         }
+        throw new Error(errorMessage);
       }
 
-      if (data.success === false)
-        throw new Error(data.message || "Login fallito");
-
+      // Login di successo
       localStorage.setItem("jwt", JSON.stringify(data));
       dispatch({ type: "LOGIN", payload: data });
+      addToast("Login effettuato con successo!", "success");
       navigate("/dashboard");
     } catch (error) {
       console.error("Errore login:", error);
       if (error.code === 4001) {
-        alert("Hai rifiutato la firma su MetaMask");
+        addToast("Hai rifiutato la firma su MetaMask.", "error");
       } else if (
         error.message.includes("not found") ||
-        error.message.includes("non trovato")
+        error.message.includes("non trovato") ||
+        error.message.includes("Registrati prima")
       ) {
-        alert("Utente non trovato! Prova a registrarti.");
+        addToast("Utente non trovato! Prova a registrarti.", "error");
       } else {
-        alert(`Errore: ${error.message}`);
+        addToast(`Errore: ${error.message}`, "error");
       }
     } finally {
       setLoading(false);
     }
   };
 
+  // --- Rendering del Componente ---
+
   return (
     <div className="nav-bar">
       <div className="nav-bar-inner">
         <h3 className="logo">FreelanceHub</h3>
         <div className="links">
-          <div className="logo-btn" onClick={handleLoginClick}>
+          {/* Bottone Login */}
+          <button
+            className="logo-btn"
+            onClick={handleLoginClick}
+            disabled={loading}
+          >
             Login
-          </div>
+          </button>
+
+          {/* Dropdown Registrazione */}
           <div className="registration-link" ref={menuRef}>
             {location.pathname !== "/registration" && (
-              <div
+              <button
                 className="registration-btn"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
+                disabled={loading}
               >
                 Registrati
-              </div>
+              </button>
             )}
             {isMenuOpen && (
               <div className="registration-dropdown-menu">
@@ -211,22 +241,41 @@ const NavBar = () => {
         </div>
       </div>
 
+      {/* Modale Registrazione Cliente */}
       <Modal
         isOpen={showRegistrationModal}
         onClose={() => setShowRegistrationModal(false)}
         onSubmit={handleSignupClientClick}
         mode="register"
+        onNicknameChange={setNickname}
+        error={null} // L'errore viene gestito tramite Toast
       />
 
-      {/* {loading && (
+      {/* Loading Overlay CORRETTO */}
+      {loading && (
         <div className="loading-overlay">
-          <div className="spinner">
-            {showRegistrationModal
-              ? "Registrazione in corso..."
-              : "Login in corso..."}
+          <div className="loading-box">
+            <div className="spinner"></div>
+            <div className="loading-text">
+              {showRegistrationModal
+                ? "Registrazione in corso..."
+                : "Login in corso..."}
+            </div>
           </div>
         </div>
-      )} */}
+      )}
+
+      {/* Toast Container */}
+      <div className="toast-container">
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </div>
     </div>
   );
 };
