@@ -1,0 +1,256 @@
+:root {
+    --bg: #f5f8fb;
+    --card: #fff;
+    --muted: #6b7b88;
+    --primary: #1693c6;
+    --input-border: #e6eef3;
+    --danger: #e53935;
+}
+
+.announce-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    padding: 28px;
+    background: var(--bg);
+    color: #172133;
+}
+
+.page-title {
+    margin: 0 0 6px;
+    font-size: 28px;
+}
+
+.page-sub {
+    color: var(--muted);
+    margin: 0 0 18px;
+}
+
+.card.form-card {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(30, 40, 50, 0.04);
+    border: 1px solid rgba(10, 30, 50, 0.04);
+    max-width: 1100px;
+}
+
+.section-details {
+    margin-bottom: 18px;
+}
+
+.section-details-title {
+    color: #0f1720;
+    margin: 0 0 10px;
+    font-size: 16px;
+}
+
+
+.section-requirements {
+    margin-bottom: 18px;
+}
+
+.section-requirements-title {
+    color: #0f1720;
+    margin: 0 0 10px;
+    font-size: 16px;
+}
+
+.label {
+    display: block;
+    margin: 10px 0 6px;
+    font-weight: 600;
+    color: #2b3b45;
+}
+
+.input,
+.textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 14px;
+    background: #fbfdff;
+    color: #12202a;
+}
+
+.textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 6px;
+}
+
+.skills-input {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.btn {
+    border: none;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn.small {
+    padding: 6px 10px;
+    font-size: 14px;
+}
+
+.btn.primary {
+    background: var(--primary);
+    color: #fff;
+}
+
+.btn.ghost {
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    color: #123;
+}
+
+.skills-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.skill-tag {
+    background: #eef6fb;
+    padding: 6px 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.remove-skill {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #7b8a92;
+}
+
+.date-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.date-input {
+    padding-right: 38px;
+}
+
+.date-icon {
+    position: absolute;
+    right: 6px;
+    height: 32px;
+    width: 32px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.req-input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.add-req {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #fff;
+    padding: 0;
+    font-size: 20px;
+}
+
+.empty-req {
+    margin-top: 12px;
+    border: 2px dashed #e6eef3;
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-start;
+    color: var(--muted);
+}
+
+.empty-req-icon {
+    font-size: 20px;
+    background: #f0fbff;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+.req-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.req-item {
+    background: #fbfdff;
+    border: 1px solid var(--input-border);
+    padding: 10px 12px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    justify-content: flex-end;
+}
+
+.input-error {
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 4px rgba(229, 57, 53, 0.06);
+}
+
+.section-requirements-desctiption {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.text-error {
+    font-size: 14px;
+    color: #e53935;
+    margin-top: 6px;
+}
+
+/* responsive */
+@media (max-width: 920px) {
+    .row {
+        flex-direction: column;
+    }
+
+    .date-wrapper,
+    .skills-input {
+        width: 100%;
+    }
+}
