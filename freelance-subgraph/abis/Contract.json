@@ -1,0 +1,105 @@
+[
+  { "inputs": [], "name": "ReentrancyGuardReentrantCall", "type": "error" },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "client",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "budget",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "deadline",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "dataHash",
+        "type": "string"
+      }
+    ],
+    "name": "AnnouncementCreated",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "announcementCount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "announcements",
+    "outputs": [
+      { "internalType": "address", "name": "client", "type": "address" },
+      { "internalType": "address", "name": "freelancer", "type": "address" },
+      { "internalType": "uint256", "name": "budget", "type": "uint256" },
+      { "internalType": "uint256", "name": "deadline", "type": "uint256" },
+      { "internalType": "string", "name": "dataHash", "type": "string" },
+      {
+        "internalType": "enum Freelance.JobStatus",
+        "name": "state",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_dataHash", "type": "string" },
+      { "internalType": "uint256", "name": "_deadline", "type": "uint256" }
+    ],
+    "name": "createAnnouncement",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getOpenJobs",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "client", "type": "address" },
+          {
+            "internalType": "address",
+            "name": "freelancer",
+            "type": "address"
+          },
+          { "internalType": "uint256", "name": "budget", "type": "uint256" },
+          { "internalType": "uint256", "name": "deadline", "type": "uint256" },
+          { "internalType": "string", "name": "dataHash", "type": "string" },
+          {
+            "internalType": "enum Freelance.JobStatus",
+            "name": "state",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct Freelance.Announcement[]",
+        "name": "",
+        "type": "tuple[]"
+      },
+      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

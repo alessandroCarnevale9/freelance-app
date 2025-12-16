@@ -1,0 +1,11 @@
+type AnnouncementCreated @entity(immutable: true) {
+  id: Bytes!
+  internal_id: BigInt! # uint256
+  client: Bytes! # address
+  budget: BigInt! # uint256
+  deadline: BigInt! # uint256
+  dataHash: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
