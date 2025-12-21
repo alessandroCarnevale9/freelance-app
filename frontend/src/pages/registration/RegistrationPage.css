@@ -1,86 +1,92 @@
 /* --- Main Container --- */
 .registration-page {
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   box-sizing: border-box;
-  padding: 20px;
-  flex: 1;
+  padding: 40px 20px;
   min-height: 100vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(to right, #90BFE5, #E2F6EF);
+  align-items: center;
+  justify-content: flex-start;
+  background: linear-gradient(135deg, #90BFE5 0%, #E2F6EF 100%);
 }
 
 .registration-page-form {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-width: 320px;
-  max-width: 900px;
-  margin: 0 auto;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 32px;
+  width: 100%;
+  max-width: 800px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 48px;
+  box-sizing: border-box;
 }
 
 /* --- Titles --- */
 .registration-page-form-title {
   text-align: center;
-  font-size: 32px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 24px;
+  font-size: 36px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 32px;
+  letter-spacing: -0.5px;
 }
 
 .registration-page-form-projects-title {
   text-align: center;
-  font-size: 24px;
-  font-weight: bold;
-  margin: 20px 0;
-  color: #333;
+  font-size: 26px;
+  font-weight: 700;
+  margin: 32px 0 24px;
+  color: #34495e;
+  letter-spacing: -0.3px;
 }
 
 /* --- Global Error Message --- */
 .global-error-message {
   background-color: #fee2e2;
   color: #991b1b;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
   border-left: 4px solid #ef4444;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.6;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
 }
 
 /* --- Form Elements --- */
 .registration-page-form p {
-  margin: 16px 0 4px 0;
-  font-size: 14px;
-  color: #333;
-  font-weight: 500;
+  margin: 20px 0 8px 0;
+  font-size: 15px;
+  color: #2c3e50;
+  font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
 .input-field {
   width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 0 0 4px 0;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
   font-size: 16px;
   font-family: inherit;
-  background-color: transparent;
+  background-color: #ffffff;
   box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  /* -webkit-appearance: none; */
+  transition: all 0.3s ease;
 }
 
 .input-field:focus {
   outline: none;
   border-color: #90BFE5;
-  box-shadow: 0 0 0 3px rgba(144, 191, 229, 0.1);
+  box-shadow: 0 0 0 4px rgba(144, 191, 229, 0.15);
+  background-color: #fafafa;
 }
 
 .input-field:disabled {
@@ -91,39 +97,40 @@
 
 .registration-page-form textarea {
   width: 100%;
-  min-height: 120px;
-  max-height: 220px;
+  min-height: 140px;
+  max-height: 300px;
   overflow-y: auto;
   resize: vertical;
   box-sizing: border-box;
-  padding: 12px;
+  padding: 14px 16px;
   font-family: inherit;
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.6;
   white-space: pre-wrap;
   word-wrap: break-word;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: transparent;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  /* -webkit-appearance: none; */
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
 }
 
 .registration-page-form textarea:focus {
   outline: none;
   border-color: #90BFE5;
-  box-shadow: 0 0 0 3px rgba(144, 191, 229, 0.1);
+  box-shadow: 0 0 0 4px rgba(144, 191, 229, 0.15);
+  background-color: #fafafa;
 }
 
 /* --- Error States --- */
 .input-error {
   border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
 }
 
 .message-error {
   color: #ef4444;
-  font-size: 13px;
-  margin: 4px 0 12px 0;
+  font-size: 14px;
+  margin: 4px 0 16px 0;
   font-weight: 500;
 }
 
@@ -134,9 +141,9 @@
 /* --- Skills Section --- */
 .registration-page-form-skills-input {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   align-items: flex-start;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .registration-page-form-skills-input input {
@@ -145,72 +152,83 @@
 }
 
 .registration-page-form-skills-add-btn {
-  font-size: 14px;
+  font-size: 15px;
   height: auto;
-  padding: 12px 20px;
-  font-weight: bold;
+  padding: 14px 28px;
+  font-weight: 600;
   background-color: #D5D5D5;
+  color: #2c3e50;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: all 0.3s ease;
   white-space: nowrap;
-  min-height: 44px;
+  min-height: 48px;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .registration-page-form-skills-add-btn:hover {
-  background-color: #c0c0c0;
+  background-color: #bfbfbf;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .registration-page-form-skills-add-btn:active {
-  transform: scale(0.98);
+  transform: translateY(0);
 }
 
 .registration-page-form-skills-add-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .skills-list {
-  margin-top: 12px;
+  margin-top: 16px;
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .skill-tag {
-  background: rgba(144, 191, 229, 0.15);
-  padding: 8px 12px;
-  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(144, 191, 229, 0.2) 0%, rgba(144, 191, 229, 0.1) 100%);
+  padding: 10px 16px;
+  border-radius: 25px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #333;
+  gap: 10px;
+  font-size: 15px;
+  color: #2c3e50;
+  font-weight: 500;
+  border: 1px solid rgba(144, 191, 229, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .skill-remove {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.8);
   border: none;
   color: #666;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 4px;
   line-height: 1;
   font-size: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: color 0.2s;
-  min-width: 20px;
-  min-height: 20px;
+  transition: all 0.2s;
+  min-width: 24px;
+  min-height: 24px;
   touch-action: manipulation;
 }
 
 .skill-remove:hover {
   color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  transform: scale(1.1);
 }
 
 .skill-remove:focus {
@@ -219,62 +237,74 @@
 
 /* --- Projects Section --- */
 .project-container {
-  margin-bottom: 40px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 12px;
-  border: 1px solid rgba(144, 191, 229, 0.2);
+  margin-bottom: 32px;
+  padding: 28px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+  border-radius: 16px;
+  border: 2px solid rgba(144, 191, 229, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
 }
 
 .project-container-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(144, 191, 229, 0.15);
 }
 
 .project-container-inner h4 {
   margin: 0;
-  font-size: 18px;
-  color: #333;
+  font-size: 20px;
+  color: #2c3e50;
+  font-weight: 700;
 }
 
 .remove-project-item {
   color: #ef4444;
-  border: none;
-  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.05);
   cursor: pointer;
   font-size: 14px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
   min-height: 44px;
   touch-action: manipulation;
 }
 
 .remove-project-item:hover {
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
 }
 
 /* --- Image Upload Section --- */
 .project-image-placeholder {
-  width: 200px;
-  height: 200px;
-  border: 2px dashed #ccc;
-  border-radius: 8px;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 220px;
+  border: 3px dashed #d0d0d0;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.5);
-  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
   min-height: 44px;
   touch-action: manipulation;
 }
 
 .project-image-placeholder:hover {
   border-color: #90BFE5;
-  background: rgba(144, 191, 229, 0.05);
+  background: rgba(144, 191, 229, 0.08);
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(144, 191, 229, 0.15);
 }
 
 .project-image-placeholder:active {
@@ -283,9 +313,9 @@
 
 .preview-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-  margin-top: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .preview-item {
@@ -293,8 +323,15 @@
   width: 100%;
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 12px;
   background: rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.preview-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .preview-item .preview-image {
@@ -306,30 +343,33 @@
 
 .preview-remove-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   z-index: 20;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  min-height: 32px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   padding: 0;
   line-height: 1;
-  font-size: 18px;
-  transition: background-color 0.2s;
+  font-size: 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
   touch-action: manipulation;
 }
 
 .preview-remove-btn:hover {
-  background: rgba(239, 68, 68, 0.9);
+  background: rgba(239, 68, 68, 0.95);
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 .preview-remove-btn:focus {
@@ -340,16 +380,17 @@
 .add-image-to-existing {
   width: 100%;
   aspect-ratio: 1;
-  border: 2px dashed #ccc;
-  border-radius: 8px;
+  border: 3px dashed #d0d0d0;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48px;
-  color: #ccc;
+  font-size: 56px;
+  font-weight: 300;
+  color: #d0d0d0;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.5);
-  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
   min-height: 44px;
   touch-action: manipulation;
 }
@@ -357,7 +398,9 @@
 .add-image-to-existing:hover {
   border-color: #90BFE5;
   color: #90BFE5;
-  background: rgba(144, 191, 229, 0.05);
+  background: rgba(144, 191, 229, 0.08);
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(144, 191, 229, 0.15);
 }
 
 .add-image-to-existing:active {
@@ -367,67 +410,79 @@
 .add-image-to-existing:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* --- Buttons --- */
 .btn-add-project {
-  padding: 15px 30px;
+  padding: 16px 32px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   background-color: #D5D5D5;
-  margin: 20px 0;
+  color: #2c3e50;
+  margin: 24px 0;
   width: 100%;
-  transition: background-color 0.2s, transform 0.1s;
-  min-height: 44px;
+  transition: all 0.3s ease;
+  min-height: 52px;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .btn-add-project:hover {
-  background-color: #c0c0c0;
+  background-color: #bfbfbf;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .btn-add-project:active {
-  transform: scale(0.99);
+  transform: translateY(0);
 }
 
 .btn-add-project:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-submit-registration {
-  margin-top: 24px;
-  padding: 16px 32px;
+  margin-top: 32px;
+  padding: 18px 40px;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 700;
   color: #fff;
-  background-color: #90BFE5;
+  background: linear-gradient(135deg, #90BFE5 0%, #7ab0d8 100%);
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   width: 100%;
-  transition: background-color 0.2s, transform 0.1s;
-  min-height: 48px;
+  transition: all 0.3s ease;
+  min-height: 56px;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 4px 12px rgba(144, 191, 229, 0.3);
+  letter-spacing: 0.3px;
 }
 
 .btn-submit-registration:hover {
-  background-color: #7ab0d8;
+  background: linear-gradient(135deg, #7ab0d8 0%, #6aa0c8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(144, 191, 229, 0.4);
 }
 
 .btn-submit-registration:active {
-  transform: scale(0.99);
+  transform: translateY(0);
 }
 
 .btn-submit-registration:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
   transform: none;
+  box-shadow: 0 2px 8px rgba(144, 191, 229, 0.2);
 }
 
 /* --- Loading Overlay --- */
@@ -437,37 +492,38 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.75);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 10001;
+  backdrop-filter: blur(4px);
 }
 
 .loading-box {
   background: white;
-  padding: 32px;
-  border-radius: 12px;
+  padding: 40px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  gap: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
   max-width: 90%;
 }
 
 .loading-text {
-  color: #333;
-  font-size: 16px;
-  font-weight: 500;
+  color: #2c3e50;
+  font-size: 17px;
+  font-weight: 600;
   text-align: center;
 }
 
 .spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #90BFE5;
+  width: 56px;
+  height: 56px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #90BFE5;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -480,38 +536,64 @@
 
 /* --- Divider --- */
 hr {
-  margin: 30px 0;
+  margin: 36px 0;
   border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 2px solid rgba(144, 191, 229, 0.2);
 }
 
 /* --- Design Responsivo --- */
-@media (max-width: 1024px) {
+
+/* Large Tablets & Small Desktops: 1024px - 1280px */
+@media (max-width: 1280px) {
   .registration-page-form {
-    max-width: 95%;
+    max-width: 750px;
   }
 }
 
-@media (max-width: 768px) {
+/* Tablets: 768px - 1023px */
+@media (max-width: 1023px) {
   .registration-page {
-    padding: 12px;
+    padding: 32px 16px;
   }
 
   .registration-page-form {
-    padding: 24px;
-    min-width: auto;
+    max-width: 100%;
+    padding: 36px 32px;
   }
 
   .registration-page-form-title {
-    font-size: 24px;
+    font-size: 32px;
   }
 
   .registration-page-form-projects-title {
-    font-size: 20px;
+    font-size: 24px;
   }
 
   .preview-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+/* Mobile Landscape & Small Tablets: 640px - 767px */
+@media (max-width: 767px) {
+  .registration-page {
+    padding: 20px 12px;
+  }
+
+  .registration-page-form {
+    max-width: 100%;
+    padding: 28px 20px;
+    border-radius: 16px;
+  }
+
+  .registration-page-form-title {
+    font-size: 28px;
+    margin-bottom: 24px;
+  }
+
+  .registration-page-form-projects-title {
+    font-size: 22px;
+    margin: 24px 0 20px;
   }
 
   .registration-page-form-skills-input {
@@ -522,30 +604,92 @@ hr {
     width: 100%;
   }
 
+  .project-container {
+    padding: 20px 16px;
+  }
+
   .project-container-inner {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 12px;
   }
 
   .remove-project-item {
     align-self: flex-end;
   }
+
+  .preview-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
 }
 
-@media (max-width: 480px) {
+/* Mobile Portrait: 480px - 639px */
+@media (max-width: 639px) {
   .registration-page {
-    padding: 8px;
+    padding: 16px 10px;
   }
 
   .registration-page-form {
-    padding: 16px;
+    max-width: 100%;
+    padding: 24px 18px;
+  }
+
+  .registration-page-form-title {
+    font-size: 24px;
+  }
+
+  .registration-page-form-projects-title {
+    font-size: 20px;
+  }
+
+  .input-field,
+  .registration-page-form textarea {
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+
+  .btn-submit-registration {
+    padding: 16px 32px;
+    font-size: 17px;
+    min-height: 52px;
+  }
+
+  .btn-add-project {
+    padding: 14px 28px;
+    font-size: 15px;
+    min-height: 48px;
+  }
+
+  .skill-tag {
+    font-size: 14px;
+    padding: 8px 14px;
+  }
+
+  .project-container {
+    padding: 18px 14px;
+  }
+
+  .preview-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+/* Small Mobile: 375px - 479px */
+@media (max-width: 479px) {
+  .registration-page {
+    padding: 12px 8px;
+  }
+
+  .registration-page-form {
+    max-width: 100%;
+    padding: 20px 14px;
     border-radius: 12px;
   }
 
   .registration-page-form-title {
-    font-size: 20px;
-    margin-bottom: 16px;
+    font-size: 22px;
+    margin-bottom: 20px;
   }
 
   .registration-page-form-projects-title {
@@ -554,40 +698,71 @@ hr {
 
   .input-field,
   .registration-page-form textarea {
-    padding: 10px;
-    font-size: 15px;
+    padding: 11px 13px;
+    font-size: 16px;
   }
 
   .preview-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 
-  .project-image-placeholder,
   .add-image-to-existing {
-    font-size: 36px;
+    font-size: 42px;
   }
 
   .preview-remove-btn {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-    min-height: 28px;
-    font-size: 16px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 18px;
+    top: 8px;
+    right: 8px;
   }
 
   .btn-add-project,
   .btn-submit-registration {
-    padding: 12px 24px;
+    padding: 13px 24px;
     font-size: 15px;
   }
 
   .skill-tag {
     font-size: 13px;
-    padding: 6px 10px;
+    padding: 7px 12px;
   }
 
   .project-container {
-    padding: 16px;
+    padding: 16px 12px;
+    margin-bottom: 24px;
+  }
+
+  .project-container-inner h4 {
+    font-size: 18px;
+  }
+}
+
+/* Extra Small Mobile: <= 374px */
+@media (max-width: 374px) {
+  .registration-page {
+    padding: 10px 6px;
+  }
+
+  .registration-page-form {
+    max-width: 100%;
+    padding: 18px 12px;
+  }
+
+  .registration-page-form-title {
+    font-size: 20px;
+  }
+
+  .preview-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .add-image-to-existing {
+    font-size: 36px;
   }
 }

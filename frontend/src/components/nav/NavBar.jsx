@@ -7,6 +7,21 @@ import { useAuthContext } from "../../hooks/useAuthContext";
 import { ethers } from "ethers";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
+// Helper function per ottenere i dati utente dalla struttura nidificata
+const getUserData = (authUser) => {
+  if (!authUser) return null;
+
+  if (authUser.returnUser?.user) {
+    return authUser.returnUser.user;
+  }
+
+  if (authUser.user) {
+    return authUser.user;
+  }
+
+  return authUser;
+};
+
 const NavBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,7 +47,6 @@ const NavBar = () => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
-  // Click outside handling ottimizzato per mobile
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -44,7 +58,6 @@ const NavBar = () => {
       }
     };
 
-    // Solo mousedown per desktop - evita conflitti con touch
     if (window.innerWidth > 768) {
       document.addEventListener("mousedown", handleClickOutside);
       return () => {
@@ -227,12 +240,32 @@ const NavBar = () => {
     setIsOpenHamMenu(false);
   };
 
+  // Funzione per gestire il click sul logo
+  const handleLogoClick = () => {
+    if (!user) {
+      // Se non loggato, vai alla home
+      navigate("/");
+    } else {
+      // Se loggato, vai alla dashboard appropriata
+      const userData = getUserData(user);
+      if (userData?.role === 'FREELANCER') {
+        navigate("/freelancer-dashboard");
+      } else if (userData?.role === 'CLIENT') {
+        navigate("/client-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  };
+
   // --- Rendering del Componente ---
 
   return (
     <div className="nav-bar">
       <div className="nav-bar-inner">
-        <h3 className="logo">FreelanceHub</h3>
+        <h3 className="logo" onClick={handleLogoClick}>
+          FreelanceHub
+        </h3>
 
         {/* Desktop Links */}
         <div className="links">
