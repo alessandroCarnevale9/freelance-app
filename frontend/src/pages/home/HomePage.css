@@ -1,113 +1,189 @@
-.home-page {
-  min-height: 100vh;
-  overflow: hidden;
+/* --- Reset e Variabili --- */
+:root {
+  --primary-bg: #E2F6EF;
+  --secondary-bg: #CEE9ED;
+  --neutral-bg: #D5D5D5;
+  --accent-blue: #90BFE5;
+  --text-main: #333;
 }
 
+.home-page {
+  min-height: 100vh;
+  width: 100%;
+  font-family: sans-serif; /* Assicurati di usare il tuo font */
+  overflow-x: hidden;
+}
+
+/* --- Welcome Section --- */
 .home-page-welcome {
-    background: linear-gradient(to right, #90BFE5, #E2F6EF);
+  background: linear-gradient(to right, var(--accent-blue), var(--primary-bg));
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .home-page-welcome p {
-    margin: 0;
-    padding: 5% 23%;
-    font-weight: 700;
-    font-size: 7vw;
+  margin: 0;
+  padding: 80px 10%;
+  font-weight: 700;
+  font-size: clamp(1.8rem, 6vw, 4.5rem); /* Dimensione fluida */
+  line-height: 1.2;
 }
 
+/* --- Buttons Section --- */
 .home-page-buttons {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 30px;
-    margin: 50px 0;
+  display: flex;
+  flex-wrap: wrap; /* Fondamentale per il mobile */
+  justify-content: center;
+  gap: 20px;
+  margin: 50px auto;
+  padding: 0 20px;
+  max-width: 1200px;
 }
 
 .home-page-buttons button {
-    min-width: 255px;
-    padding: 15px 30px;
-    font-size: 18px;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
+  flex: 1;
+  max-width: 280px;
+  min-width: 200px;
+  padding: 18px 30px;
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
-.home-page-buttons button:first-child {
-    background-color: #CEE9ED;
+.home-page-buttons button:hover {
+  transform: translateY(-3px);
 }
 
-.home-page-buttons button:last-child {
-    background-color: #D5D5D5;
-}
+.btn-primary { background-color: var(--secondary-bg); }
+.btn-secondary { background-color: var(--neutral-bg); }
 
+/* --- Separator --- */
 .home-page-separator {
-    width: 100%;
-    height: 120px;
-    background-color: #E2F6EF;
+  width: 100%;
+  height: 100px;
+  background-color: var(--primary-bg);
+}
+
+/* --- About Section (Desktop Timeline) --- */
+.home-page-about {
+  padding: 60px 20px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 .home-page-about h2 {
-    width: fit-content;
-    font-size: 3vw;
-    margin: 0 auto;
-    margin-top: 15px;
+  text-align: center;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  margin-bottom: 60px;
 }
 
+.home-page-about-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-phase-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Divide esattamente a metà */
+  gap: 40px;
+  align-items: stretch;
+}
+
+.about-phase-text {
+  text-align: right;
+  padding-bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.about-phase-text strong {
+  font-size: 1.4rem;
+  text-transform: lowercase;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.about-phase-visual {
+  position: relative;
+  border-left: 2px solid black;
+  padding-left: 40px;
+  padding-bottom: 60px;
+}
+
+/* Cerchio sulla linea */
 .about-circle {
-    position: absolute;
-    top: 0;
-    left: -10px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: black;
+  position: absolute;
+  left: -11px; /* Centra il cerchio di 20px sulla linea di 2px */
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: black;
 }
 
-.about-phase-1 {
-    margin: 0 15%;
-    display: flex;
-    gap: 300px;
+/* Ultimo elemento della timeline senza bordo inferiore */
+.about-phase-row:last-child .about-phase-visual {
+  border-left: 2px solid transparent;
 }
 
-.about-phase-1-icons {
-    position: relative;
-    border-left: 2px solid black;
+/* --- Gestione Icone --- */
+.phase-icons-wrapper, .icon-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.about-phase-1-text {
-    width: 300px;
-    padding-bottom: 10%;
+.phase-icons-multi {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.about-phase-1:last-child > .about-phase-1-text {
-    padding-bottom: 0;
+/* --- Mobile Carousel Card --- */
+.home-page-carousel {
+  padding: 20px 0;
 }
 
-.about-phase-1-info-icons {
-    width: 300px;
-    padding-top: 15%;
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
+.about-phase-card {
+  background: #f9f9f9;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  margin: 10px;
+  height: 100%;
 }
 
-.about-phase-1-info-icons div {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.about-phase-card h3 {
+  margin-top: 0;
+  color: var(--text-main);
 }
 
-.about-phase-1-info-icons-multiblock {
-    width: 300px;
-    padding-top: 15%;
-    display: flex;
-    flex-direction: column;
-    margin-left: 10px;
+.about-phase-card-description {
+  line-height: 1.6;
+  margin: 20px 0;
 }
 
-.about-phase-1-info-icons-multiblock div {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+/* --- Responsive Adjustments --- */
+@media (max-width: 1024px) {
+  .home-page-about-inner {
+    padding: 0 5%;
+  }
 }
 
-
+@media (max-width: 800px) {
+  .home-page-welcome p {
+    padding: 60px 5%;
+  }
+  
+  .home-page-buttons button {
+    max-width: 100%;
+  }
+}

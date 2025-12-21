@@ -1,0 +1,194 @@
+.carousel-wrapper {
+    /* z-index: -1; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+}
+
+.carousel-container {
+    width: 100%;
+    overflow: hidden;
+    touch-action: pan-y pinch-zoom;
+    user-select: none;
+    cursor: grab;
+    position: relative;
+}
+
+.carousel-container.dragging {
+    cursor: grabbing;
+}
+
+.carousel-track {
+    display: flex;
+    width: 100%;
+}
+
+.carousel-slide {
+    flex: 0 0 100%;
+    box-sizing: border-box;
+    padding: 0 10px;
+}
+
+.carousel-btn {
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+.carousel-btn:first-of-type {
+    left: 10px;
+}
+
+.carousel-btn:nth-of-type(2) {
+    right: 10px;
+}
+
+.carousel-btn:hover:not(:disabled) {
+    background: #f0f0f0;
+    transform: translateY(-50%) scale(1.1);
+    border-color: #999;
+}
+
+.carousel-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.carousel-btn:active:not(:disabled) {
+    transform: translateY(-50%) scale(0.95);
+}
+
+/* Indicatori */
+.carousel-indicators {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    background: #ddd;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.carousel-dot.active {
+    background: #333;
+    transform: scale(1.2);
+}
+
+.carousel-dot:hover {
+    background: #999;
+}
+
+/* Tablet (640px - 1024px) */
+@media (min-width: 640px) and (max-width: 1024px) {
+    .carousel-wrapper {
+        padding: 0 40px;
+    }
+
+    .carousel-slide {
+        padding: 0 20px;
+    }
+
+    .carousel-btn {
+        width: 55px;
+        height: 55px;
+    }
+
+    .carousel-btn:first-of-type {
+        left: 20px;
+    }
+
+    .carousel-btn:nth-of-type(2) {
+        right: 20px;
+    }
+
+    /* Card più grandi su tablet */
+    .about-phase-card {
+        min-height: 450px !important;
+        padding: 40px 30px !important;
+    }
+
+    .about-phase-card-header h3 {
+        font-size: 28px !important;
+    }
+
+    .about-phase-card-description {
+        font-size: 18px !important;
+    }
+}
+
+/* Smartphone (< 640px) */
+@media (max-width: 639px) {
+    .carousel-wrapper {
+        padding: 0 10px;
+    }
+
+    .carousel-slide {
+        padding: 0 5px;
+    }
+
+    .carousel-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .carousel-btn:first-of-type {
+        left: 5px;
+    }
+
+    .carousel-btn:nth-of-type(2) {
+        right: 5px;
+    }
+
+    /* Card dimensioni normali su smartphone */
+    .about-phase-card {
+        min-height: 400px !important;
+        padding: 25px 20px !important;
+    }
+
+    .about-phase-card-header h3 {
+        font-size: 22px !important;
+    }
+
+    .about-phase-card-description {
+        font-size: 15px !important;
+    }
+
+    .carousel-indicators {
+        margin-top: 15px;
+    }
+
+    .carousel-dot {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .carousel-btn {
+        display: flex;
+    }
+}

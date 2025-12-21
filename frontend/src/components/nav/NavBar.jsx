@@ -1,4 +1,5 @@
 import "./NavBar.css";
+import { HamburgerMenu, CrossIcon } from "@icons";
 import Modal from "../modal/Modal.jsx";
 import Toast from "../toast/Toast.jsx";
 import { useState, useRef, useEffect } from "react";
@@ -10,6 +11,7 @@ const NavBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isOpenHamMenu, setIsOpenHamMenu] = useState(false);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
@@ -30,9 +32,9 @@ const NavBar = () => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
+  // Click outside handling ottimizzato per mobile
   useEffect(() => {
     const handleClickOutside = (e) => {
-      // Controlla se il menu è aperto E se il click è fuori dal menu
       if (
         isMenuOpen &&
         menuRef.current &&
@@ -41,15 +43,21 @@ const NavBar = () => {
         setIsMenuOpen(false);
       }
     };
-    // Aggiunge gli ascoltatori di eventi
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    // Rimuove gli ascoltatori di eventi al cleanup
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
+
+    // Solo mousedown per desktop - evita conflitti con touch
+    if (window.innerWidth > 768) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
   }, [isMenuOpen]);
+
+  // Chiudi menu quando cambia la route
+  useEffect(() => {
+    setIsMenuOpen(false);
+    setIsOpenHamMenu(false);
+  }, [location.pathname]);
 
   // --- Funzioni di Autenticazione ---
 
@@ -75,22 +83,26 @@ const NavBar = () => {
       throw new Error("MetaMask non installato");
     }
 
-    // Assicurati che l'utente abbia dato il consenso
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
 
-    const signer = provider.getSigner();
-    const address = await signer.getAddress();
-    const nonce = await getNonce();
+      const signer = provider.getSigner();
+      const address = await signer.getAddress();
+      const nonce = await getNonce();
 
-    // Firma il nonce per l'autenticazione
-    const signedMessage = await signer.signMessage(nonce);
+      const signedMessage = await signer.signMessage(nonce);
 
-    return { address, nonce, signedMessage };
+      return { address, nonce, signedMessage };
+    } catch (error) {
+      if (error.code === 4001) {
+        throw new Error("Firma rifiutata");
+      }
+      throw error;
+    }
   };
 
   const handleSignupClientClick = async (nicknameValue) => {
-    // Aggiorna il nickname se proviene dalla modale
     const currentNickname = nicknameValue || nickname;
 
     if (!currentNickname.trim()) {
@@ -98,7 +110,7 @@ const NavBar = () => {
       return;
     }
 
-    setNickname(currentNickname); // Aggiorna lo stato anche se proviene dal parametro
+    setNickname(currentNickname);
     setLoading(true);
 
     try {
@@ -122,15 +134,18 @@ const NavBar = () => {
         throw new Error(data.message || "Registrazione fallita");
       }
 
-      // Login di successo
       localStorage.setItem("jwt", JSON.stringify(data));
       dispatch({ type: "LOGIN", payload: data });
       addToast("Registrazione completata con successo!", "success");
       setShowRegistrationModal(false);
-      navigate("/dashboard");
+
+      // Piccolo delay prima del navigate per mostrare il toast
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 500);
     } catch (error) {
       console.error("Errore registrazione:", error);
-      if (error.code === 4001) {
+      if (error.code === 4001 || error.message === "Firma rifiutata") {
         addToast("Hai rifiutato la firma su MetaMask.", "error");
       } else if (error.message.includes("already exists")) {
         addToast(
@@ -147,6 +162,9 @@ const NavBar = () => {
 
   const handleLoginClick = async () => {
     setLoading(true);
+    setIsOpenHamMenu(false);
+    setIsMenuOpen(false);
+
     try {
       const { address, nonce, signedMessage } = await connectWalletAndSign();
 
@@ -159,7 +177,6 @@ const NavBar = () => {
       const data = await response.json();
 
       if (!response.ok || data.success === false) {
-        // Gestione degli errori basata sullo stato e/o messaggio
         let errorMessage = data.message || "Errore durante il login.";
         if (response.status === 404) {
           errorMessage = "Utente non trovato. Registrati prima.";
@@ -167,14 +184,16 @@ const NavBar = () => {
         throw new Error(errorMessage);
       }
 
-      // Login di successo
       localStorage.setItem("jwt", JSON.stringify(data));
       dispatch({ type: "LOGIN", payload: data });
       addToast("Login effettuato con successo!", "success");
-      navigate("/dashboard");
+
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 500);
     } catch (error) {
       console.error("Errore login:", error);
-      if (error.code === 4001) {
+      if (error.code === 4001 || error.message === "Firma rifiutata") {
         addToast("Hai rifiutato la firma su MetaMask.", "error");
       } else if (
         error.message.includes("not found") ||
@@ -191,8 +210,21 @@ const NavBar = () => {
   };
 
   const handleLogoutClick = async () => {
+    setIsOpenHamMenu(false);
+    setIsMenuOpen(false);
     localStorage.removeItem("jwt");
     dispatch({ type: "LOGOUT" });
+    navigate("/");
+  };
+
+  const toggleRegistrationMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleClientRegistration = () => {
+    setShowRegistrationModal(true);
+    setIsMenuOpen(false);
+    setIsOpenHamMenu(false);
   };
 
   // --- Rendering del Componente ---
@@ -201,8 +233,9 @@ const NavBar = () => {
     <div className="nav-bar">
       <div className="nav-bar-inner">
         <h3 className="logo">FreelanceHub</h3>
+
+        {/* Desktop Links */}
         <div className="links">
-          {/* Blocchi Login/Registrazione (Se NON loggato) */}
           {!user && (
             <>
               <button
@@ -218,7 +251,7 @@ const NavBar = () => {
                 {location.pathname !== "/registration" && (
                   <button
                     className="registration-btn"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    onClick={toggleRegistrationMenu}
                     disabled={loading}
                   >
                     Registrati
@@ -235,10 +268,7 @@ const NavBar = () => {
                     </Link>
                     <div
                       className="registration-dropdown-menu-item"
-                      onClick={() => {
-                        setShowRegistrationModal(true);
-                        setIsMenuOpen(false);
-                      }}
+                      onClick={handleClientRegistration}
                     >
                       Cliente
                     </div>
@@ -248,7 +278,6 @@ const NavBar = () => {
             </>
           )}
 
-          {/* Bottone Logout (Se loggato) */}
           {user && (
             <button
               className="logout-btn"
@@ -259,19 +288,100 @@ const NavBar = () => {
             </button>
           )}
         </div>
+
+        {/* Hamburger Menu Icon */}
+        {!isOpenHamMenu && (
+          <div
+            className="hamburger-open"
+            onClick={() => setIsOpenHamMenu(true)}
+          >
+            <HamburgerMenu />
+          </div>
+        )}
+
+        {isOpenHamMenu && (
+          <div
+            className="hamburger-close"
+            onClick={() => setIsOpenHamMenu(false)}
+          >
+            <CrossIcon width="25" height="25" fill="#D5D5D5" />
+          </div>
+        )}
+
+        {/* Mobile Menu */}
+        {isOpenHamMenu && (
+          <div className="mobile-links">
+            {!user && (
+              <>
+                <button
+                  className="logo-btn"
+                  onClick={handleLoginClick}
+                  disabled={loading}
+                >
+                  Login
+                </button>
+
+                <div className="registration">
+                  {location.pathname !== "/registration" && (
+                    <button
+                      className="registration-btn"
+                      onClick={toggleRegistrationMenu}
+                      disabled={loading}
+                    >
+                      Registrati
+                    </button>
+                  )}
+                  {isMenuOpen && (
+                    <div className="registration-dropdown-menu">
+                      <Link
+                        className="registration-dropdown-menu-item"
+                        to="/registration"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setIsOpenHamMenu(false);
+                        }}
+                      >
+                        Freelancer
+                      </Link>
+                      <div
+                        className="registration-dropdown-menu-item"
+                        onClick={handleClientRegistration}
+                      >
+                        Cliente
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {user && (
+              <button
+                className="logout-btn"
+                onClick={handleLogoutClick}
+                disabled={loading}
+              >
+                Log out
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Modale Registrazione Cliente */}
       <Modal
         isOpen={showRegistrationModal}
-        onClose={() => setShowRegistrationModal(false)}
+        onClose={() => {
+          if (!loading) {
+            setShowRegistrationModal(false);
+          }
+        }}
         onSubmit={handleSignupClientClick}
         mode="register"
-        onNicknameChange={setNickname}
-        error={null} // L'errore viene gestito tramite Toast
+        error={null}
       />
 
-      {/* Loading Overlay CORRETTO */}
+      {/* Loading Overlay */}
       {loading && (
         <div className="loading-overlay">
           <div className="loading-box">
