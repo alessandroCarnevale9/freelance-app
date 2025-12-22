@@ -1,12 +1,7 @@
 import './ClientDashboard.css';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useNavigate } from 'react-router-dom';
-
-import {
-    SearchIcon,
-    AddToQueueIcon
-} from "@icons";
-
+import { AddToQueueIcon, SearchIcon } from "@icons";
 
 const ClientDashboard = () => {
     const { user } = useAuthContext();
@@ -45,7 +40,7 @@ const ClientDashboard = () => {
                             onClick={() => navigate('/jobs/create')}
                         >
                             <div className="action-icon">
-                                <AddToQueueIcon />
+                                <AddToQueueIcon width={48} height={48} />
                             </div>
                             <h3>Pubblica Annuncio</h3>
                             <p>Crea un nuovo annuncio di lavoro</p>
@@ -56,7 +51,7 @@ const ClientDashboard = () => {
                             onClick={() => navigate('/freelancers')}
                         >
                             <div className="action-icon">
-                                <SearchIcon />
+                                <SearchIcon width={48} height={48} />
                             </div>
                             <h3>Cerca Freelancer</h3>
                             <p>Esplora i profili disponibili</p>

@@ -175,13 +175,6 @@ const ProfileEdit = () => {
             <div className="profile-edit-container">
                 <div className="profile-edit-header">
                     <h1>Modifica Profilo</h1>
-                    <button
-                        className="back-btn"
-                        onClick={() => navigate(`/profile/${user.address}`)}
-                        disabled={saving}
-                    >
-                        Annulla
-                    </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="profile-edit-form">
