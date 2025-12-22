@@ -1,19 +1,35 @@
-const express = require(`express`)
+const express = require('express');
 const {
-    // createUser,
+    getProfile,
+    updateProfile,
+    searchUsers,
+    getUserStats,
     deleteUser
-} = require('../controllers/userController')
+} = require('../controllers/userController');
+const { validateUser } = require('../middlewares/userValidation');
+const verifyJWT = require('../middlewares/verifyJWT');
 
-const {
-    validateUser,
-} = require('../middlewares/userValidation')
+const router = express.Router();
 
-const router = express.Router()
+// Route pubbliche
+// ... nessuna per ora
 
-// signup route
-router.post(`/signup`, validateUser, /* createUser */)
+// Route protette (richiedono autenticazione)
+router.use(verifyJWT); // Tutte le route sotto richiedono JWT
 
-// delete route
-router.delete('/:id', deleteUser)
+// GET /api/user/profile/:address - Ottieni profilo pubblico di un utente
+router.get('/profile/:address', getProfile);
 
-module.exports = router
+// PUT /api/user/profile - Aggiorna il proprio profilo
+router.put('/profile', updateProfile);
+
+// GET /api/user/search - Cerca utenti (filtri opzionali: role, skills, query)
+router.get('/search', searchUsers);
+
+// GET /api/user/stats/:address - Ottieni statistiche utente
+router.get('/stats/:address', getUserStats);
+
+// DELETE /api/user/:id - Elimina utente
+router.delete('/:id', deleteUser);
+
+module.exports = router;

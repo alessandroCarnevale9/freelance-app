@@ -5,6 +5,8 @@ import HomePage from './pages/home/HomePage';
 import RegistrationPage from './pages/registration/RegistrationPage';
 import FreelancerDashboard from './pages/freelancer-dashboard/FreelancerDashboard';
 import ClientDashboard from './pages/client-dashboard/ClientDashboard';
+import ProfileView from './pages/profile-view/ProfileView';
+import ProfileEdit from './pages/profile-edit/ProfileEdit';
 import NavBar from './components/nav/NavBar';
 
 // Componente per proteggere le route che richiedono autenticazione
@@ -24,7 +26,6 @@ const PublicRoute = ({ children }) => {
 
   if (user) {
     console.log('PublicRoute - User data:', user);
-
     // Reindirizza alla dashboard appropriata in base al ruolo
     if (user.role === 'FREELANCER') {
       return <Navigate to="/freelancer-dashboard" replace />;
@@ -71,6 +72,7 @@ function App() {
                 </PublicRoute>
               }
             />
+
             <Route
               path="/registration"
               element={<RegistrationPage />}
@@ -85,11 +87,31 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/client-dashboard"
               element={
                 <ProtectedRoute>
                   <ClientDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Route profilo - NUOVE */}
+            <Route
+              path="/profile/:address"
+              element={
+                <ProtectedRoute>
+                  <ProfileView />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/profile/edit"
+              element={
+                <ProtectedRoute>
+                  <ProfileEdit />
                 </ProtectedRoute>
               }
             />

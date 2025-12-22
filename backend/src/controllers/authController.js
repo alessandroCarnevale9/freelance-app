@@ -17,7 +17,6 @@ let released_nonce = [];
 
 // *** login with metamask ***
 const metamaskLogin = async (req, res) => {
-
   const { address, nickname, signedMessage, nonce } = req.body;
 
   // Validazione campi richiesti
@@ -131,7 +130,7 @@ const refresh = async (req, res) => {
   const payload = {
     UserInfo: {
       id: foundUser._id.toString(),
-      email: foundUser.email,
+      address: foundUser.address,  // Corretto: usa address invece di email
       role: foundUser.role,
     },
   };
@@ -323,11 +322,9 @@ const freelancerSignup = (bucket) => {
       });
 
       if (existingUser) {
-        return res
-          .status(409)
-          .json({
-            error: `Utente con indirizzo ${recoveredAddress} già esistente.`,
-          });
+        return res.status(409).json({
+          error: `Utente con indirizzo ${recoveredAddress} già esistente.`,
+        });
       }
 
       const processedProjects = [];
@@ -363,7 +360,7 @@ const freelancerSignup = (bucket) => {
               address: recoveredAddress.toLowerCase().trim(),
               nickname,
               role,
-              skills,
+              keySkills: skills,
               projects: processedProjects,
               isActive: true,
             });
@@ -373,7 +370,7 @@ const freelancerSignup = (bucket) => {
               address: recoveredAddress.toLowerCase().trim(),
               nickname,
               role,
-              skills,
+              keySkills: skills,
               isActive: true,
             });
           };

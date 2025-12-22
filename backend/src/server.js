@@ -24,7 +24,7 @@ const app = express();
 
     // Routes
     app.use("/api/auth", authRoutes);
-    app.use("/api/user", userRoutes);
+    app.use("/api/users", userRoutes);
 
     // Route 404 per endpoint non trovati
     app.use((req, res) => {
