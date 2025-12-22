@@ -11,6 +11,7 @@ import {
   CheckIcon,
   GearIcon,
   UploadIcon,
+  ChevronRightIcon,
 } from "@icons";
 
 import "./HomePage.css";

@@ -1,5 +1,6 @@
 import "./Carousel.css";
 import { useState } from "react";
+import { ChevronRightIcon } from "@icons";
 
 const Carousel = ({ items }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -74,9 +75,9 @@ const Carousel = ({ items }) => {
             <button
                 onClick={goToPrevious}
                 disabled={currentIndex === 0}
-                className="carousel-btn"
+                className="carousel-btn carousel-btn-prev"
             >
-                <div>&lt;</div>
+                <ChevronRightIcon style={{ transform: 'rotate(180deg)' }} />
             </button>
 
             <div
@@ -92,8 +93,7 @@ const Carousel = ({ items }) => {
                 <div
                     className="carousel-track"
                     style={{
-                        transform: `translateX(calc(-${currentIndex * 100
-                            }% + ${dragOffset}px))`,
+                        transform: `translateX(calc(-${currentIndex * 100}% + ${dragOffset}px))`,
                         transition: isDragging ? "none" : "transform 0.5s ease-in-out",
                     }}
                 >
@@ -108,9 +108,9 @@ const Carousel = ({ items }) => {
             <button
                 onClick={goToNext}
                 disabled={currentIndex >= maxIndex}
-                className="carousel-btn"
+                className="carousel-btn carousel-btn-next"
             >
-                <div>&gt;</div>
+                <ChevronRightIcon />
             </button>
 
             <div className="carousel-indicators">

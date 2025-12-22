@@ -2,6 +2,12 @@ import './FreelancerDashboard.css';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useNavigate } from 'react-router-dom';
 
+import {
+    SearchIcon,
+    EditIcon
+} from "@icons";
+
+
 const FreelancerDashboard = () => {
     const { user } = useAuthContext();
     const navigate = useNavigate();
@@ -38,7 +44,9 @@ const FreelancerDashboard = () => {
                             className="action-card primary"
                             onClick={() => navigate('/jobs')}
                         >
-                            <div className="action-icon">🔍</div>
+                            <div className="action-icon">
+                                <SearchIcon />
+                            </div>
                             <h3>Cerca Lavori</h3>
                             <p>Esplora nuovi annunci disponibili</p>
                         </button>
@@ -47,7 +55,9 @@ const FreelancerDashboard = () => {
                             className="action-card"
                             onClick={() => navigate(`/profile/edit`)}
                         >
-                            <div className="action-icon">✏️</div>
+                            <div className="action-icon">
+                                <EditIcon />
+                            </div>
                             <h3>Aggiorna Profilo</h3>
                             <p>Migliora il tuo profilo professionale</p>
                         </button>
