@@ -63,20 +63,6 @@ const NavBar = () => {
     setIsOpenHamMenu(false);
   }, [location.pathname]);
 
-  // Mostra toast per errori di login
-  useEffect(() => {
-    if (loginError) {
-      addToast(loginError, "error");
-    }
-  }, [loginError]);
-
-  // Mostra toast per errori di signup
-  useEffect(() => {
-    if (signupError) {
-      addToast(signupError, "error");
-    }
-  }, [signupError]);
-
   // --- Funzioni di Autenticazione ---
 
   const getNonce = async () => {
