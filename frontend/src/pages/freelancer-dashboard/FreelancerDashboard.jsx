@@ -1,35 +1,20 @@
 import './FreelancerDashboard.css';
 import { useAuthContext } from '../../hooks/useAuthContext';
 
-// Helper function per ottenere i dati utente dalla struttura nidificata
-const getUserData = (authUser) => {
-    if (!authUser) return null;
-
-    if (authUser.returnUser?.user) {
-        return authUser.returnUser.user;
-    }
-
-    if (authUser.user) {
-        return authUser.user;
-    }
-
-    return authUser;
-};
-
 const FreelancerDashboard = () => {
-    const { user: authUser } = useAuthContext();
-    const userData = getUserData(authUser);
+    const { user } = useAuthContext();
 
     return (
         <div className="freelancer-dashboard">
             <div className="dashboard-container">
                 <h1>Dashboard Freelancer</h1>
+
                 <div className="welcome-message">
-                    <h2>Benvenuto, {userData?.nickname || 'Freelancer'}!</h2>
+                    <h2>Benvenuto, {user?.nickname || 'Freelancer'}!</h2>
                     <p>Questa è la tua dashboard da freelancer.</p>
-                    {userData?.address && (
+                    {user?.address && (
                         <p className="wallet-address">
-                            Wallet: {userData.address.slice(0, 6)}...{userData.address.slice(-4)}
+                            Wallet: {user.address.slice(0, 6)}...{user.address.slice(-4)}
                         </p>
                     )}
                 </div>

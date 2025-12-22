@@ -1,5 +1,5 @@
 import "./RegistrationPage.css";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { AddImage } from "@icons";
 import { ethers } from "ethers";
 import { useAuthContext } from "../../hooks/useAuthContext";
@@ -140,7 +140,6 @@ const RegistrationPage = () => {
     setErrors(newErrors);
     if (newErrors.name || newErrors.titles || newErrors.skills) {
       setErrorMessage("Per favore completa tutti i campi obbligatori");
-      // Scroll to top per mostrare l'errore
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -196,26 +195,39 @@ const RegistrationPage = () => {
         body: formData,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-
-        localStorage.setItem("jwt", JSON.stringify(data));
-        dispatch({ type: "LOGIN", payload: data });
-
-        console.log("Registrazione completata");
-
-        // Redirect alla dashboard o home
-        navigate("/dashboard");
-      } else {
+      if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.message || "Errore durante la registrazione");
+        throw new Error(errData.error || errData.message || "Errore durante la registrazione");
       }
+
+      const data = await response.json();
+
+      // Salva con la struttura semplificata
+      // La risposta è: { user: { address, nickname, role }, accessToken }
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("accessToken", data.accessToken);
+
+      // IMPORTANTE: Aggiorna il context con dispatch
+      dispatch({ type: "LOGIN", payload: data.user });
+
+      console.log("Registrazione completata:", data.user);
+
+      // Aspetta che il context si aggiorni prima di fare il redirect
+      setTimeout(() => {
+        // Redirect alla dashboard appropriata
+        if (data.user.role === "FREELANCER") {
+          navigate("/freelancer-dashboard");
+        } else {
+          navigate("/dashboard");
+        }
+      }, 100);
+
     } catch (error) {
       console.error("Errore registrazione:", error);
 
       if (error.code === 4001) {
         setErrorMessage("Hai rifiutato la firma su MetaMask.");
-      } else if (error.message.includes("already exists")) {
+      } else if (error.message.includes("already exists") || error.message.includes("già esistente")) {
         setErrorMessage("Questo wallet è già registrato! Prova a fare login.");
       } else {
         setErrorMessage(error.message || "Errore durante la registrazione");
@@ -231,6 +243,9 @@ const RegistrationPage = () => {
   const triggerFileInput = (index) => {
     document.getElementById(`file-input-${index}`)?.click();
   };
+
+  // Determina se ci sono operazioni in corso
+  const isOperationLoading = loading;
 
   return (
     <div className="registration-page">
@@ -249,7 +264,7 @@ const RegistrationPage = () => {
           value={name}
           onChange={handleNameChange}
           type="text"
-          disabled={loading}
+          disabled={isOperationLoading}
         />
         {errors.name && (
           <div className="message-error">Inserisci il tuo nome</div>
@@ -263,7 +278,7 @@ const RegistrationPage = () => {
           value={titles}
           className={`input-field ${errors.titles ? "input-error" : ""}`}
           onChange={handleTitleChange}
-          disabled={loading}
+          disabled={isOperationLoading}
         />
         {errors.titles && (
           <div className="message-error">
@@ -287,13 +302,13 @@ const RegistrationPage = () => {
                 addSkill();
               }
             }}
-            disabled={loading}
+            disabled={isOperationLoading}
           />
           <button
             type="button"
             onClick={addSkill}
             className="registration-page-form-skills-add-btn"
-            disabled={loading}
+            disabled={isOperationLoading}
           >
             Aggiungi
           </button>
@@ -311,7 +326,7 @@ const RegistrationPage = () => {
                   type="button"
                   className="skill-remove"
                   onClick={() => removeSkill(i)}
-                  disabled={loading}
+                  disabled={isOperationLoading}
                 >
                   ✕
                 </button>
@@ -333,7 +348,7 @@ const RegistrationPage = () => {
                   className="remove-project-item"
                   type="button"
                   onClick={() => removeProject(idx)}
-                  disabled={loading}
+                  disabled={isOperationLoading}
                 >
                   Elimina Progetto
                 </button>
@@ -348,7 +363,7 @@ const RegistrationPage = () => {
               onChange={(e) =>
                 handleProjectChange(idx, "title", e.target.value)
               }
-              disabled={loading}
+              disabled={isOperationLoading}
             />
 
             <p>Descrizione</p>
@@ -359,7 +374,7 @@ const RegistrationPage = () => {
               onChange={(e) =>
                 handleProjectChange(idx, "description", e.target.value)
               }
-              disabled={loading}
+              disabled={isOperationLoading}
             />
 
             <p>Link (Opzionale)</p>
@@ -368,7 +383,7 @@ const RegistrationPage = () => {
               type="text"
               value={proj.link}
               onChange={(e) => handleProjectChange(idx, "link", e.target.value)}
-              disabled={loading}
+              disabled={isOperationLoading}
             />
 
             <div style={{ marginTop: "15px" }}>
@@ -383,7 +398,7 @@ const RegistrationPage = () => {
               multiple
               style={{ display: "none" }}
               onChange={(e) => handleProjectFileChange(idx, e)}
-              disabled={loading}
+              disabled={isOperationLoading}
             />
 
             <div className="preview-grid">
@@ -392,7 +407,7 @@ const RegistrationPage = () => {
                   type="button"
                   className="project-image-placeholder"
                   onClick={() => triggerFileInput(idx)}
-                  disabled={loading}
+                  disabled={isOperationLoading}
                 >
                   <AddImage />
                 </button>
@@ -411,7 +426,7 @@ const RegistrationPage = () => {
                         type="button"
                         className="preview-remove-btn"
                         onClick={() => removeProjectPreview(idx, imgIndex)}
-                        disabled={loading}
+                        disabled={isOperationLoading}
                       >
                         ✕
                       </button>
@@ -421,7 +436,7 @@ const RegistrationPage = () => {
                     type="button"
                     className="add-image-to-existing"
                     onClick={() => triggerFileInput(idx)}
-                    disabled={loading}
+                    disabled={isOperationLoading}
                   >
                     +
                   </button>
@@ -435,7 +450,7 @@ const RegistrationPage = () => {
           type="button"
           onClick={addProject}
           className="btn-add-project"
-          disabled={loading}
+          disabled={isOperationLoading}
         >
           + Aggiungi un altro progetto
         </button>
@@ -443,12 +458,12 @@ const RegistrationPage = () => {
         <button
           className="btn-submit-registration"
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={isOperationLoading}
         >
-          {loading ? "Registrazione in corso..." : "Registrati"}
+          {isOperationLoading ? "Registrazione in corso..." : "Registrati"}
         </button>
 
-        {loading && (
+        {isOperationLoading && (
           <div className="loading-overlay">
             <div className="loading-box">
               <div className="spinner"></div>

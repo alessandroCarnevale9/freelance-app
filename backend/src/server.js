@@ -2,8 +2,10 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const Database = require("./config/database");
+const errorHandler = require("./middlewares/errorHandler");
 
 dotenv.config();
+
 const PORT = process.env.PORT || 4000;
 const app = express();
 
@@ -15,21 +17,24 @@ const app = express();
     const authRoutes = require("./routes/auth")(bucket);
     const userRoutes = require("./routes/user");
 
-    // middlewares
+    // Middlewares di base
     app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
 
-    // routes
-    app.use("/auth", authRoutes);
-    app.use("/user", userRoutes);
+    // Routes
+    app.use("/api/auth", authRoutes);
+    app.use("/api/user", userRoutes);
 
-    // error handler *dopo* tutte le route
-    app.use((err, req, res, next) => {
-      const status = err.statusCode || err.status || 500;
-      const message = err.message || "Internal Server Error";
-      if (status >= 500) console.error(err);
-      res.status(status).json({ error: message });
+    // Route 404 per endpoint non trovati
+    app.use((req, res) => {
+      res.status(404).json({
+        error: `Route ${req.method} ${req.originalUrl} non trovata`,
+        success: false
+      });
     });
+
+    app.use(errorHandler);
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

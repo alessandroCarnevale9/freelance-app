@@ -1,52 +1,49 @@
-const express = require('express')
+const express = require('express');
 const multer = require('multer');
-
 const {
-  // login,
   metamaskLogin,
   refresh,
   logout,
   nonce,
   metamaskSignup,
   freelancerSignup
-} = require('../controllers/authController')
+} = require('../controllers/authController');
 const loginLimiter = require('../middlewares/loginLimiter');
 
 module.exports = (bucket) => {
-  const router = express.Router()
-
+  const router = express.Router();
   const storage = multer.memoryStorage();
-  const upload = multer({
-    storage
-  });
+  const upload = multer({ storage });
 
-  router.post('/login', loginLimiter, /*login*/metamaskLogin)
-  router.get('/refresh', refresh)
-  router.post('/logout', logout)
-
-  router.get('/nonce', nonce)
-  router.post('/signup', metamaskSignup)
+  // Route autenticazione MetaMask
+  router.get('/nonce', nonce);
+  router.post('/metamask-login', loginLimiter, metamaskLogin);
+  router.post('/metamask-signup', metamaskSignup);
   router.post('/freelancer-signup', upload.any(), freelancerSignup(bucket));
 
+  // Route token management
+  router.post('/refresh', refresh);
+  router.post('/logout', logout);
+
+  // Route immagini
   router.get('/image/view/:partialId', async (req, res) => {
-    if (!bucket) return res.status(500).send('DB non pronto');
+    if (!bucket) return res.status(500).json({ error: 'DB non pronto' });
 
     try {
       const regex = new RegExp(req.params.partialId, 'i');
       const files = await bucket.find({
-        _id: {
-          $regex: regex
-        }
+        _id: { $regex: regex }
       }).limit(1).toArray();
 
-      if (!files.length) return res.status(404).send('Not Found');
+      if (!files.length) {
+        return res.status(404).json({ error: 'Immagine non trovata' });
+      }
 
       bucket.openDownloadStream(files[0]._id).pipe(res);
     } catch (e) {
-      res.status(500).send(e.message);
+      res.status(500).json({ error: e.message });
     }
   });
 
-  return router
-}
-
+  return router;
+};

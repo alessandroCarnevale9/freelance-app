@@ -4,23 +4,11 @@ import Modal from "../modal/Modal.jsx";
 import Toast from "../toast/Toast.jsx";
 import { useState, useRef, useEffect } from "react";
 import { useAuthContext } from "../../hooks/useAuthContext";
+import { useLogin } from "../../hooks/useLogin";
+import { useSignup } from "../../hooks/useSignup";
+import { useLogout } from "../../hooks/useLogout";
 import { ethers } from "ethers";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-
-// Helper function per ottenere i dati utente dalla struttura nidificata
-const getUserData = (authUser) => {
-  if (!authUser) return null;
-
-  if (authUser.returnUser?.user) {
-    return authUser.returnUser.user;
-  }
-
-  if (authUser.user) {
-    return authUser.user;
-  }
-
-  return authUser;
-};
 
 const NavBar = () => {
   const location = useLocation();
@@ -34,7 +22,10 @@ const NavBar = () => {
 
   const [nickname, setNickname] = useState("");
 
-  const { user, dispatch } = useAuthContext();
+  const { user } = useAuthContext();
+  const { login, isLoading: isLoginLoading, error: loginError } = useLogin();
+  const { signup, isLoading: isSignupLoading, error: signupError } = useSignup();
+  const { logout } = useLogout();
 
   // Funzione per aggiungere un toast
   const addToast = (message, type = "error") => {
@@ -71,6 +62,20 @@ const NavBar = () => {
     setIsMenuOpen(false);
     setIsOpenHamMenu(false);
   }, [location.pathname]);
+
+  // Mostra toast per errori di login
+  useEffect(() => {
+    if (loginError) {
+      addToast(loginError, "error");
+    }
+  }, [loginError]);
+
+  // Mostra toast per errori di signup
+  useEffect(() => {
+    if (signupError) {
+      addToast(signupError, "error");
+    }
+  }, [signupError]);
 
   // --- Funzioni di Autenticazione ---
 
@@ -109,6 +114,7 @@ const NavBar = () => {
       return { address, nonce, signedMessage };
     } catch (error) {
       if (error.code === 4001) {
+        addToast("Hai rifiutato la firma su MetaMask.", "error");
         throw new Error("Firma rifiutata");
       }
       throw error;
@@ -129,44 +135,32 @@ const NavBar = () => {
     try {
       const { address, nonce, signedMessage } = await connectWalletAndSign();
 
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address,
-          nickname: currentNickname,
-          role: "client",
-          signedMessage,
-          nonce,
-        }),
+      // Usa l'hook useSignup
+      await signup({
+        address,
+        nickname: currentNickname,
+        role: "CLIENT", // Maiuscolo per corrispondere al backend
+        signedMessage,
+        nonce,
       });
 
-      const data = await response.json();
-
-      if (!response.ok || data.success === false) {
-        throw new Error(data.message || "Registrazione fallita");
-      }
-
-      localStorage.setItem("jwt", JSON.stringify(data));
-      dispatch({ type: "LOGIN", payload: data });
       addToast("Registrazione completata con successo!", "success");
       setShowRegistrationModal(false);
 
       // Piccolo delay prima del navigate per mostrare il toast
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/client-dashboard");
       }, 500);
     } catch (error) {
       console.error("Errore registrazione:", error);
-      if (error.code === 4001 || error.message === "Firma rifiutata") {
-        addToast("Hai rifiutato la firma su MetaMask.", "error");
+      // Gli errori specifici sono già gestiti dall'hook e mostrati tramite useEffect
+      if (error.message === "Firma rifiutata") {
+        // Già gestito in connectWalletAndSign
       } else if (error.message.includes("already exists")) {
         addToast(
           "Questo wallet è già registrato! Prova a fare login.",
           "error"
         );
-      } else {
-        addToast(`Errore: ${error.message}`, "error");
       }
     } finally {
       setLoading(false);
@@ -181,52 +175,44 @@ const NavBar = () => {
     try {
       const { address, nonce, signedMessage } = await connectWalletAndSign();
 
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, signedMessage, nonce }),
-      });
+      // Usa l'hook useLogin
+      await login({ address, signedMessage, nonce });
 
-      const data = await response.json();
-
-      if (!response.ok || data.success === false) {
-        let errorMessage = data.message || "Errore durante il login.";
-        if (response.status === 404) {
-          errorMessage = "Utente non trovato. Registrati prima.";
-        }
-        throw new Error(errorMessage);
-      }
-
-      localStorage.setItem("jwt", JSON.stringify(data));
-      dispatch({ type: "LOGIN", payload: data });
       addToast("Login effettuato con successo!", "success");
 
+      // Nota: l'hook useLogin ha già fatto dispatch, quindi il context è aggiornato
+      // Aspettiamo un po' prima di leggere dal localStorage
       setTimeout(() => {
-        navigate("/dashboard");
+        const userData = JSON.parse(localStorage.getItem("user"));
+        if (userData?.role === "FREELANCER") {
+          navigate("/freelancer-dashboard");
+        } else if (userData?.role === "CLIENT") {
+          navigate("/client-dashboard");
+        } else {
+          navigate("/dashboard");
+        }
       }, 500);
     } catch (error) {
       console.error("Errore login:", error);
-      if (error.code === 4001 || error.message === "Firma rifiutata") {
-        addToast("Hai rifiutato la firma su MetaMask.", "error");
+      // Gli errori specifici sono già gestiti dall'hook e mostrati tramite useEffect
+      if (error.message === "Firma rifiutata") {
+        // Già gestito in connectWalletAndSign
       } else if (
         error.message.includes("not found") ||
         error.message.includes("non trovato") ||
         error.message.includes("Registrati prima")
       ) {
         addToast("Utente non trovato! Prova a registrarti.", "error");
-      } else {
-        addToast(`Errore: ${error.message}`, "error");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogoutClick = async () => {
+  const handleLogoutClick = () => {
     setIsOpenHamMenu(false);
     setIsMenuOpen(false);
-    localStorage.removeItem("jwt");
-    dispatch({ type: "LOGOUT" });
+    logout(); // Usa l'hook useLogout
     navigate("/");
   };
 
@@ -247,16 +233,19 @@ const NavBar = () => {
       navigate("/");
     } else {
       // Se loggato, vai alla dashboard appropriata
-      const userData = getUserData(user);
-      if (userData?.role === 'FREELANCER') {
+      // Ora user ha già la struttura corretta: { address, nickname, role }
+      if (user.role === 'FREELANCER') {
         navigate("/freelancer-dashboard");
-      } else if (userData?.role === 'CLIENT') {
+      } else if (user.role === 'CLIENT') {
         navigate("/client-dashboard");
       } else {
         navigate("/dashboard");
       }
     }
   };
+
+  // Determina se ci sono operazioni in corso
+  const isOperationLoading = loading || isLoginLoading || isSignupLoading;
 
   // --- Rendering del Componente ---
 
@@ -274,7 +263,7 @@ const NavBar = () => {
               <button
                 className="logo-btn"
                 onClick={handleLoginClick}
-                disabled={loading}
+                disabled={isOperationLoading}
               >
                 Login
               </button>
@@ -285,7 +274,7 @@ const NavBar = () => {
                   <button
                     className="registration-btn"
                     onClick={toggleRegistrationMenu}
-                    disabled={loading}
+                    disabled={isOperationLoading}
                   >
                     Registrati
                   </button>
@@ -315,7 +304,7 @@ const NavBar = () => {
             <button
               className="logout-btn"
               onClick={handleLogoutClick}
-              disabled={loading}
+              disabled={isOperationLoading}
             >
               Log out
             </button>
@@ -349,7 +338,7 @@ const NavBar = () => {
                 <button
                   className="logo-btn"
                   onClick={handleLoginClick}
-                  disabled={loading}
+                  disabled={isOperationLoading}
                 >
                   Login
                 </button>
@@ -359,7 +348,7 @@ const NavBar = () => {
                     <button
                       className="registration-btn"
                       onClick={toggleRegistrationMenu}
-                      disabled={loading}
+                      disabled={isOperationLoading}
                     >
                       Registrati
                     </button>
@@ -392,7 +381,7 @@ const NavBar = () => {
               <button
                 className="logout-btn"
                 onClick={handleLogoutClick}
-                disabled={loading}
+                disabled={isOperationLoading}
               >
                 Log out
               </button>
@@ -405,7 +394,7 @@ const NavBar = () => {
       <Modal
         isOpen={showRegistrationModal}
         onClose={() => {
-          if (!loading) {
+          if (!isOperationLoading) {
             setShowRegistrationModal(false);
           }
         }}
@@ -415,7 +404,7 @@ const NavBar = () => {
       />
 
       {/* Loading Overlay */}
-      {loading && (
+      {isOperationLoading && (
         <div className="loading-overlay">
           <div className="loading-box">
             <div className="spinner"></div>

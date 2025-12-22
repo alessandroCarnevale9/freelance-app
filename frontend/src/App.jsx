@@ -7,29 +7,11 @@ import FreelancerDashboard from './pages/freelancer-dashboard/FreelancerDashboar
 import ClientDashboard from './pages/client-dashboard/ClientDashboard';
 import NavBar from './components/nav/NavBar';
 
-// Helper function per ottenere i dati utente dalla struttura nidificata
-const getUserData = (authUser) => {
-  if (!authUser) return null;
-
-  // Gestisce la struttura nidificata: user.returnUser.user
-  if (authUser.returnUser?.user) {
-    return authUser.returnUser.user;
-  }
-
-  // Fallback se la struttura è diversa
-  if (authUser.user) {
-    return authUser.user;
-  }
-
-  // Se non ci sono annidamenti
-  return authUser;
-};
-
 // Componente per proteggere le route che richiedono autenticazione
 const ProtectedRoute = ({ children }) => {
-  const { user: authUser } = useAuthContext();
+  const { user } = useAuthContext();
 
-  if (!authUser) {
+  if (!user) {
     return <Navigate to="/" replace />;
   }
 
@@ -38,16 +20,15 @@ const ProtectedRoute = ({ children }) => {
 
 // Componente per reindirizzare utenti già loggati dalla home
 const PublicRoute = ({ children }) => {
-  const { user: authUser } = useAuthContext();
+  const { user } = useAuthContext();
 
-  if (authUser) {
-    const userData = getUserData(authUser);
-    console.log('PublicRoute - User data:', userData);
+  if (user) {
+    console.log('PublicRoute - User data:', user);
 
     // Reindirizza alla dashboard appropriata in base al ruolo
-    if (userData?.role === 'FREELANCER') {
+    if (user.role === 'FREELANCER') {
       return <Navigate to="/freelancer-dashboard" replace />;
-    } else if (userData?.role === 'CLIENT') {
+    } else if (user.role === 'CLIENT') {
       return <Navigate to="/client-dashboard" replace />;
     }
   }
@@ -57,18 +38,17 @@ const PublicRoute = ({ children }) => {
 
 // Componente per reindirizzare alla dashboard corretta
 const DashboardRedirect = () => {
-  const { user: authUser } = useAuthContext();
+  const { user } = useAuthContext();
 
-  if (!authUser) {
+  if (!user) {
     return <Navigate to="/" replace />;
   }
 
-  const userData = getUserData(authUser);
-  console.log('DashboardRedirect - User data:', userData);
+  console.log('DashboardRedirect - User data:', user);
 
-  if (userData?.role === 'FREELANCER') {
+  if (user.role === 'FREELANCER') {
     return <Navigate to="/freelancer-dashboard" replace />;
-  } else if (userData?.role === 'CLIENT') {
+  } else if (user.role === 'CLIENT') {
     return <Navigate to="/client-dashboard" replace />;
   }
 
@@ -91,14 +71,9 @@ function App() {
                 </PublicRoute>
               }
             />
-
             <Route
               path="/registration"
-              element={
-                <PublicRoute>
-                  <RegistrationPage />
-                </PublicRoute>
-              }
+              element={<RegistrationPage />}
             />
 
             {/* Route protette - richiedono autenticazione */}
@@ -110,7 +85,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/client-dashboard"
               element={

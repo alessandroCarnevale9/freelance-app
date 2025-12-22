@@ -73,15 +73,13 @@ const metamaskLogin = async (req, res) => {
   const refreshToken = generateRefreshToken(payload);
   attachRefreshTokenCookie(res, refreshToken);
 
-  const returnUser = {
-    user: {
-      address: foundUser.address,
-      nickname: foundUser.nickname,
-      role: foundUser.role,
-    },
+  const user = {
+    address: foundUser.address,
+    nickname: foundUser.nickname,
+    role: foundUser.role,
   };
 
-  res.status(200).json({ returnUser, accessToken });
+  res.status(200).json({ user, accessToken });
 };
 
 // const login = async (req, res) => {
@@ -233,15 +231,13 @@ const metamaskSignup = async (req, res) => {
     const refreshToken = generateRefreshToken(payload);
     attachRefreshTokenCookie(res, refreshToken);
 
-    const returnUser = {
-      user: {
-        address: newUser.address,
-        nickname: newUser.nickname,
-        role: newUser.role,
-      },
+    const user = {
+      address: newUser.address,
+      nickname: newUser.nickname,
+      role: newUser.role,
     };
 
-    res.status(201).json({ returnUser, accessToken });
+    res.status(201).json({ user, accessToken });
   } catch (error) {
     throw new ApiError(500, error.message);
   }
@@ -363,24 +359,24 @@ const freelancerSignup = (bucket) => {
       const newUserCreation =
         processedProjects.length !== 0
           ? async () => {
-              return await User.create({
-                address: recoveredAddress.toLowerCase().trim(),
-                nickname,
-                role,
-                skills,
-                projects: processedProjects,
-                isActive: true,
-              });
-            }
+            return await User.create({
+              address: recoveredAddress.toLowerCase().trim(),
+              nickname,
+              role,
+              skills,
+              projects: processedProjects,
+              isActive: true,
+            });
+          }
           : async () => {
-              return await User.create({
-                address: recoveredAddress.toLowerCase().trim(),
-                nickname,
-                role,
-                skills,
-                isActive: true,
-              });
-            };
+            return await User.create({
+              address: recoveredAddress.toLowerCase().trim(),
+              nickname,
+              role,
+              skills,
+              isActive: true,
+            });
+          };
 
       const newUser = await newUserCreation();
 
@@ -398,15 +394,13 @@ const freelancerSignup = (bucket) => {
       const refreshToken = generateRefreshToken(payload);
       attachRefreshTokenCookie(res, refreshToken);
 
-      const returnUser = {
-        user: {
-          address: newUser.address,
-          nickname: newUser.nickname,
-          role: newUser.role,
-        },
+      const user = {
+        address: newUser.address,
+        nickname: newUser.nickname,
+        role: newUser.role,
       };
 
-      res.status(201).json({ returnUser, accessToken });
+      res.status(201).json({ user, accessToken });
     } catch (err) {
       console.error("Errore:", err);
 

@@ -17,10 +17,13 @@ export default defineConfig({
       "/api": {
         target: "http://localhost:4000",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""), // <-- remove /api when forwarding
+        secure: false,
         configure: (proxy, options) => {
           proxy.on("error", (err, req, res) => {
             console.error("Backend proxy error:", err);
+          });
+          proxy.on("proxyReq", (proxyReq, req, res) => {
+            console.log("Proxying:", req.method, req.url, "→", proxyReq.path);
           });
         },
       },
