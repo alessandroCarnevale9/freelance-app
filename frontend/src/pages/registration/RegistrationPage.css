@@ -69,6 +69,15 @@
   letter-spacing: 0.2px;
 }
 
+.skills-count,
+.projects-count,
+.image-count {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
 .input-field {
   width: 100%;
   padding: 14px 16px;
@@ -80,6 +89,11 @@
   background-color: #ffffff;
   box-sizing: border-box;
   transition: all 0.3s ease;
+}
+
+.input-field::placeholder {
+  color: #95a5a6;
+  opacity: 1;
 }
 
 .input-field:focus {
@@ -112,6 +126,11 @@
   border-radius: 10px;
   background-color: #ffffff;
   transition: all 0.3s ease;
+}
+
+.registration-page-form textarea::placeholder {
+  color: #95a5a6;
+  opacity: 1;
 }
 
 .registration-page-form textarea:focus {
@@ -169,7 +188,7 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-.registration-page-form-skills-add-btn:hover {
+.registration-page-form-skills-add-btn:hover:not(:disabled) {
   background-color: #bfbfbf;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
@@ -276,11 +295,16 @@
   touch-action: manipulation;
 }
 
-.remove-project-item:hover {
+.remove-project-item:hover:not(:disabled) {
   background-color: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.4);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+}
+
+.remove-project-item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* --- Image Upload Section --- */
@@ -395,7 +419,7 @@
   touch-action: manipulation;
 }
 
-.add-image-to-existing:hover {
+.add-image-to-existing:hover:not(:disabled) {
   border-color: #90BFE5;
   color: #90BFE5;
   background: rgba(144, 191, 229, 0.08);
@@ -432,7 +456,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.btn-add-project:hover {
+.btn-add-project:hover:not(:disabled) {
   background-color: #bfbfbf;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
@@ -468,7 +492,7 @@
   letter-spacing: 0.3px;
 }
 
-.btn-submit-registration:hover {
+.btn-submit-registration:hover:not(:disabled) {
   background: linear-gradient(135deg, #7ab0d8 0%, #6aa0c8 100%);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(144, 191, 229, 0.4);

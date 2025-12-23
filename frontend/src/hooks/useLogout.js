@@ -5,14 +5,13 @@ export const useLogout = () => {
 
     const logout = async () => {
         try {
-            // Chiama l'endpoint di logout (opzionale, per pulire il cookie)
+            // Chiama l'endpoint di logout
             await fetch('/api/auth/logout', {
                 method: 'POST',
                 credentials: 'include', // Invia i cookie
             });
         } catch (err) {
             console.error('Errore logout:', err);
-            // Continua comunque con il logout locale
         }
 
         // Rimuovi dal localStorage

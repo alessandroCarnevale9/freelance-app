@@ -29,7 +29,6 @@ const HomePage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Definizione centralizzata dei contenuti per evitare duplicazioni
   const phases = [
     {
       id: 1,
@@ -106,7 +105,7 @@ const HomePage = () => {
     },
   ];
 
-  // Preparazione degli elementi per il carosello mobile
+
   const carouselItems = phases.map((phase) => (
     <div key={phase.id} className="about-phase-card">
       <div className="about-phase-card-header">

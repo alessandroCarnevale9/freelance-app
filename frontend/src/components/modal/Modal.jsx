@@ -84,7 +84,7 @@ const Modal = ({
       const deltaX = Math.abs(touchEnd.clientX - touchStartRef.current.x);
       const deltaY = Math.abs(touchEnd.clientY - touchStartRef.current.y);
 
-      // Chiudi solo se non c'è stato scroll (movimento minimo)
+      // Chiudi solo se non c'è stato scroll
       if (deltaX < 10 && deltaY < 10) {
         onClose?.();
       }
@@ -104,7 +104,6 @@ const Modal = ({
 
     // Validazione semplice per modalità register
     if (mode === "register" && !value) {
-      // Potresti voler mostrare un errore qui
       return;
     }
 

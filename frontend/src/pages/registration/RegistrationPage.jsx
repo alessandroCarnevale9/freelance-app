@@ -12,12 +12,13 @@ const RegistrationPage = () => {
   const [name, setName] = useState("");
   const [titles, setTitles] = useState("");
   const [keyskills, setKeyskills] = useState([]);
-
   const [skillInput, setSkillInput] = useState("");
+
   const [errors, setErrors] = useState({
-    name: false,
-    titles: false,
-    skills: false,
+    name: "",
+    titles: "",
+    skills: "",
+    projects: {}
   });
 
   const [projects, setProjects] = useState([
@@ -36,6 +37,54 @@ const RegistrationPage = () => {
     };
   }, []);
 
+  // Funzioni di validazione
+  const validateName = (value) => {
+    if (!value || !value.trim()) return "Il nome è obbligatorio";
+    if (value.trim().length < 2) return "Il nome deve avere almeno 2 caratteri";
+    if (value.trim().length > 50) return "Il nome non può superare 50 caratteri";
+    return "";
+  };
+
+  const validateTitle = (value) => {
+    if (!value || !value.trim()) return "Il titolo professionale è obbligatorio";
+    if (value.trim().length < 3) return "Il titolo deve avere almeno 3 caratteri";
+    if (value.trim().length > 100) return "Il titolo non può superare 100 caratteri";
+    return "";
+  };
+
+  const validateSkill = (value) => {
+    if (!value || !value.trim()) return "Inserisci una competenza";
+    if (value.trim().length < 2) return "La competenza deve avere almeno 2 caratteri";
+    if (value.trim().length > 50) return "La competenza non può superare 50 caratteri";
+    return "";
+  };
+
+  const validateProjectTitle = (value) => {
+    if (!value) return "";
+    if (value.trim().length < 3) return "Il titolo deve avere almeno 3 caratteri";
+    if (value.trim().length > 100) return "Il titolo non può superare 100 caratteri";
+    return "";
+  };
+
+  const validateProjectDescription = (value) => {
+    if (!value) return "";
+    if (value.trim().length < 10) return "La descrizione deve avere almeno 10 caratteri";
+    if (value.trim().length > 500) return "La descrizione non può superare 500 caratteri";
+    return "";
+  };
+
+  const validateProjectLink = (value) => {
+    if (!value || !value.trim()) return "";
+    try {
+      new URL(value);
+      return value.startsWith('http://') || value.startsWith('https://')
+        ? ''
+        : 'L\'URL deve iniziare con http:// o https://';
+    } catch {
+      return 'URL non valido';
+    }
+  };
+
   const getNonce = async () => {
     const response = await fetch("/api/auth/nonce");
     const data = await response.json();
@@ -43,34 +92,75 @@ const RegistrationPage = () => {
   };
 
   const handleNameChange = (e) => {
-    setName(e.target.value);
-    if (e.target.value.trim()) setErrors((prev) => ({ ...prev, name: false }));
+    const value = e.target.value;
+    setName(value);
+    setErrors((prev) => ({ ...prev, name: validateName(value) }));
   };
 
   const handleTitleChange = (e) => {
-    setTitles(e.target.value);
-    if (e.target.value.trim())
-      setErrors((prev) => ({ ...prev, titles: false }));
+    const value = e.target.value;
+    setTitles(value);
+    setErrors((prev) => ({ ...prev, titles: validateTitle(value) }));
+  };
+
+  const handleSkillInputChange = (e) => {
+    const value = e.target.value;
+    setSkillInput(value);
+    setErrors((prev) => ({ ...prev, skills: "" }));
   };
 
   const addSkill = () => {
-    if (!skillInput.trim()) {
-      setErrors((prev) => ({ ...prev, skills: true }));
+    const skillError = validateSkill(skillInput);
+
+    if (skillError) {
+      setErrors((prev) => ({ ...prev, skills: skillError }));
       return;
     }
-    setKeyskills((prev) => [...prev, skillInput.trim()]);
+
+    const trimmedSkill = skillInput.trim();
+
+    if (keyskills.includes(trimmedSkill)) {
+      setErrors((prev) => ({ ...prev, skills: "Questa competenza è già presente" }));
+      return;
+    }
+
+    if (keyskills.length >= 20) {
+      setErrors((prev) => ({ ...prev, skills: "Puoi aggiungere massimo 20 competenze" }));
+      return;
+    }
+
+    setKeyskills((prev) => [...prev, trimmedSkill]);
     setSkillInput("");
-    setErrors((prev) => ({ ...prev, skills: false }));
+    setErrors((prev) => ({ ...prev, skills: "" }));
   };
 
   const removeSkill = (index) => {
     setKeyskills((prev) => prev.filter((_, i) => i !== index));
+    setErrors((prev) => ({ ...prev, skills: "" }));
   };
 
   const handleProjectChange = (index, field, value) => {
     const updatedProjects = [...projects];
     updatedProjects[index][field] = value;
     setProjects(updatedProjects);
+
+    // Validazione real-time del progetto
+    let error = "";
+    if (field === 'title') {
+      error = validateProjectTitle(value);
+    } else if (field === 'description') {
+      error = validateProjectDescription(value);
+    } else if (field === 'link') {
+      error = validateProjectLink(value);
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      projects: {
+        ...prev.projects,
+        [`${index}-${field}`]: error
+      }
+    }));
   };
 
   const isProjectEmpty = (p) =>
@@ -83,9 +173,35 @@ const RegistrationPage = () => {
     const selectedFiles = Array.from(e.target.files || []);
     if (selectedFiles.length === 0) return;
 
+    // Validazione dimensione file
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const invalidFiles = selectedFiles.filter(f => f.size > maxSize);
+
+    if (invalidFiles.length > 0) {
+      setErrorMessage(`Alcuni file superano i 5MB: ${invalidFiles.map(f => f.name).join(', ')}`);
+      return;
+    }
+
+    // Validazione tipo file
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const invalidTypes = selectedFiles.filter(f => !validTypes.includes(f.type));
+
+    if (invalidTypes.length > 0) {
+      setErrorMessage(`Tipo di file non supportato. Usa: JPEG, PNG, GIF, WEBP`);
+      return;
+    }
+
+    // Limite massimo immagini per progetto
+    const updatedProjects = [...projects];
+    const currentImages = updatedProjects[index].files.length;
+
+    if (currentImages + selectedFiles.length > 5) {
+      setErrorMessage("Puoi aggiungere massimo 5 immagini per progetto");
+      return;
+    }
+
     const newPreviews = selectedFiles.map((f) => URL.createObjectURL(f));
 
-    const updatedProjects = [...projects];
     updatedProjects[index].files = [
       ...updatedProjects[index].files,
       ...selectedFiles,
@@ -96,6 +212,7 @@ const RegistrationPage = () => {
     ];
 
     setProjects(updatedProjects);
+    setErrorMessage("");
     e.target.value = "";
   };
 
@@ -115,6 +232,12 @@ const RegistrationPage = () => {
   };
 
   const addProject = () => {
+    if (projects.length >= 10) {
+      setErrorMessage("Puoi aggiungere massimo 10 progetti");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     setProjects([
       ...projects,
       { title: "", description: "", link: "", files: [], previews: [] },
@@ -122,24 +245,76 @@ const RegistrationPage = () => {
   };
 
   const removeProject = (index) => {
+    if (projects.length === 1) {
+      setErrorMessage("Devi avere almeno un progetto");
+      return;
+    }
+
     // Revoca le URL delle preview prima di rimuovere il progetto
     const projectToRemove = projects[index];
     projectToRemove.previews.forEach((url) => URL.revokeObjectURL(url));
 
     const updatedProjects = projects.filter((_, i) => i !== index);
     setProjects(updatedProjects);
+
+    setErrors(prev => {
+      const newProjectErrors = { ...prev.projects };
+      Object.keys(newProjectErrors).forEach(key => {
+        if (key.startsWith(`${index}-`)) {
+          delete newProjectErrors[key];
+        }
+      });
+      return {
+        ...prev,
+        projects: newProjectErrors
+      };
+    });
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      name: validateName(name),
+      titles: validateTitle(titles),
+      skills: keyskills.length === 0 ? "Inserisci almeno una competenza" : "",
+      projects: {}
+    };
+
+    // Validazione progetti
+    projects.forEach((project, index) => {
+      if (!isProjectEmpty(project)) {
+        const titleError = validateProjectTitle(project.title);
+        const descError = validateProjectDescription(project.description);
+        const linkError = validateProjectLink(project.link);
+
+        if (titleError) newErrors.projects[`${index}-title`] = titleError;
+        if (descError) newErrors.projects[`${index}-description`] = descError;
+        if (linkError) newErrors.projects[`${index}-link`] = linkError;
+
+        // Verifica campi obbligatori nei progetti non vuoti
+        if (project.title && !project.description) {
+          newErrors.projects[`${index}-description`] = "La descrizione è obbligatoria se hai inserito un titolo";
+        }
+        if (project.description && !project.title) {
+          newErrors.projects[`${index}-title`] = "Il titolo è obbligatorio se hai inserito una descrizione";
+        }
+      }
+    });
+
+    setErrors(newErrors);
+
+    // Controlla se ci sono errori
+    const hasErrors =
+      newErrors.name !== "" ||
+      newErrors.titles !== "" ||
+      newErrors.skills !== "" ||
+      Object.keys(newErrors.projects).length > 0;
+
+    return !hasErrors;
   };
 
   const handleSubmit = async () => {
-    const newErrors = {
-      name: !name.trim(),
-      titles: !titles.trim(),
-      skills: keyskills.length === 0,
-    };
-
-    setErrors(newErrors);
-    if (newErrors.name || newErrors.titles || newErrors.skills) {
-      setErrorMessage("Per favore completa tutti i campi obbligatori");
+    if (!validateForm()) {
+      setErrorMessage("Per favore correggi gli errori nel form prima di procedere");
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -168,16 +343,16 @@ const RegistrationPage = () => {
 
       const payload = {
         address: address,
-        nickname: name,
+        nickname: name.trim(),
         role: role.toUpperCase(),
         signedMessage: signedMessage,
         nonce: nonce,
-        title: titles,
+        title: titles.trim(),
         skills: keyskills,
         projects: nonEmptyProjects.map((p) => ({
-          title: p.title,
-          description: p.description,
-          link: p.link,
+          title: p.title.trim(),
+          description: p.description.trim(),
+          link: p.link.trim(),
         })),
       };
 
@@ -202,19 +377,13 @@ const RegistrationPage = () => {
 
       const data = await response.json();
 
-      // Salva con la struttura semplificata
-      // La risposta è: { user: { address, nickname, role }, accessToken }
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("accessToken", data.accessToken);
-
-      // IMPORTANTE: Aggiorna il context con dispatch
       dispatch({ type: "LOGIN", payload: data.user });
 
       console.log("Registrazione completata:", data.user);
 
-      // Aspetta che il context si aggiorni prima di fare il redirect
       setTimeout(() => {
-        // Redirect alla dashboard appropriata
         if (data.user.role === "FREELANCER") {
           navigate("/freelancer-dashboard");
         } else {
@@ -239,12 +408,10 @@ const RegistrationPage = () => {
     }
   };
 
-  // Handler per aprire il file input di un progetto specifico
   const triggerFileInput = (index) => {
     document.getElementById(`file-input-${index}`)?.click();
   };
 
-  // Determina se ci sono operazioni in corso
   const isOperationLoading = loading;
 
   return (
@@ -258,44 +425,44 @@ const RegistrationPage = () => {
           </div>
         )}
 
-        <p className={errors.name ? "title-error" : ""}>Nome*</p>
+        <p className={errors.name ? "title-error" : ""}>Nome *</p>
         <input
           className={`input-field ${errors.name ? "input-error" : ""}`}
           value={name}
           onChange={handleNameChange}
           type="text"
+          placeholder="Es: Mario Rossi"
           disabled={isOperationLoading}
         />
         {errors.name && (
-          <div className="message-error">Inserisci il tuo nome</div>
+          <div className="message-error">{errors.name}</div>
         )}
 
         <p className={errors.titles ? "title-error" : ""}>
-          Titolo professionale*
+          Titolo professionale *
         </p>
         <input
           type="text"
           value={titles}
           className={`input-field ${errors.titles ? "input-error" : ""}`}
           onChange={handleTitleChange}
+          placeholder="Es: Full Stack Developer"
           disabled={isOperationLoading}
         />
         {errors.titles && (
-          <div className="message-error">
-            Inserisci il tuo titolo professionale
-          </div>
+          <div className="message-error">{errors.titles}</div>
         )}
 
-        <p className={errors.skills ? "title-error" : ""}>Key skills*</p>
+        <p className={errors.skills ? "title-error" : ""}>
+          Key skills * {keyskills.length > 0 && <span className="skills-count">({keyskills.length}/20)</span>}
+        </p>
         <div className="registration-page-form-skills-input">
           <input
             type="text"
             value={skillInput}
             className={`input-field ${errors.skills ? "input-error" : ""}`}
-            onChange={(e) => {
-              setSkillInput(e.target.value);
-              setErrors((prev) => ({ ...prev, skills: false }));
-            }}
+            onChange={handleSkillInputChange}
+            placeholder="Es: React, Node.js, Python..."
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
@@ -308,13 +475,13 @@ const RegistrationPage = () => {
             type="button"
             onClick={addSkill}
             className="registration-page-form-skills-add-btn"
-            disabled={isOperationLoading}
+            disabled={isOperationLoading || keyskills.length >= 20}
           >
             Aggiungi
           </button>
         </div>
         {errors.skills && (
-          <div className="message-error">Inserisci almeno una skill</div>
+          <div className="message-error">{errors.skills}</div>
         )}
 
         {keyskills.length > 0 && (
@@ -337,7 +504,9 @@ const RegistrationPage = () => {
 
         <hr style={{ margin: "30px 0", borderTop: "1px solid #eee" }} />
 
-        <h3 className="registration-page-form-projects-title">Progetti</h3>
+        <h3 className="registration-page-form-projects-title">
+          Progetti {projects.length > 0 && <span className="projects-count">({projects.length}/10)</span>}
+        </h3>
 
         {projects.map((proj, idx) => (
           <div key={idx} className="project-container">
@@ -357,44 +526,53 @@ const RegistrationPage = () => {
 
             <p>Titolo Progetto</p>
             <input
-              className="input-field"
+              className={`input-field ${errors.projects[`${idx}-title`] ? "input-error" : ""}`}
               type="text"
               value={proj.title}
-              onChange={(e) =>
-                handleProjectChange(idx, "title", e.target.value)
-              }
+              onChange={(e) => handleProjectChange(idx, "title", e.target.value)}
+              placeholder="Es: E-commerce con React"
               disabled={isOperationLoading}
             />
+            {errors.projects[`${idx}-title`] && (
+              <div className="message-error">{errors.projects[`${idx}-title`]}</div>
+            )}
 
             <p>Descrizione</p>
             <textarea
               rows="4"
-              className="input-field"
+              className={`input-field ${errors.projects[`${idx}-description`] ? "input-error" : ""}`}
               value={proj.description}
-              onChange={(e) =>
-                handleProjectChange(idx, "description", e.target.value)
-              }
+              onChange={(e) => handleProjectChange(idx, "description", e.target.value)}
+              placeholder="Descrivi il progetto, le tecnologie usate e i risultati ottenuti..."
               disabled={isOperationLoading}
             />
+            {errors.projects[`${idx}-description`] && (
+              <div className="message-error">{errors.projects[`${idx}-description`]}</div>
+            )}
 
             <p>Link (Opzionale)</p>
             <input
-              className="input-field"
+              className={`input-field ${errors.projects[`${idx}-link`] ? "input-error" : ""}`}
               type="text"
               value={proj.link}
               onChange={(e) => handleProjectChange(idx, "link", e.target.value)}
+              placeholder="https://progetto.com"
               disabled={isOperationLoading}
             />
+            {errors.projects[`${idx}-link`] && (
+              <div className="message-error">{errors.projects[`${idx}-link`]}</div>
+            )}
 
             <div style={{ marginTop: "15px" }}>
-              <span>Immagini del progetto</span>
+              <span>
+                Immagini del progetto {proj.files.length > 0 && <span className="image-count">({proj.files.length}/5)</span>}
+              </span>
             </div>
 
-            {/* File input nascosto per ogni progetto */}
             <input
               id={`file-input-${idx}`}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
               multiple
               style={{ display: "none" }}
               onChange={(e) => handleProjectFileChange(idx, e)}
@@ -432,14 +610,16 @@ const RegistrationPage = () => {
                       </button>
                     </div>
                   ))}
-                  <button
-                    type="button"
-                    className="add-image-to-existing"
-                    onClick={() => triggerFileInput(idx)}
-                    disabled={isOperationLoading}
-                  >
-                    +
-                  </button>
+                  {proj.files.length < 5 && (
+                    <button
+                      type="button"
+                      className="add-image-to-existing"
+                      onClick={() => triggerFileInput(idx)}
+                      disabled={isOperationLoading}
+                    >
+                      +
+                    </button>
+                  )}
                 </>
               )}
             </div>
@@ -450,7 +630,7 @@ const RegistrationPage = () => {
           type="button"
           onClick={addProject}
           className="btn-add-project"
-          disabled={isOperationLoading}
+          disabled={isOperationLoading || projects.length >= 10}
         >
           + Aggiungi un altro progetto
         </button>

@@ -166,8 +166,6 @@ const NavBar = () => {
 
       addToast("Login effettuato con successo!", "success");
 
-      // Nota: l'hook useLogin ha già fatto dispatch, quindi il context è aggiornato
-      // Aspettiamo un po' prima di leggere dal localStorage
       setTimeout(() => {
         const userData = JSON.parse(localStorage.getItem("user"));
         if (userData?.role === "FREELANCER") {
@@ -219,7 +217,6 @@ const NavBar = () => {
       navigate("/");
     } else {
       // Se loggato, vai alla dashboard appropriata
-      // Ora user ha già la struttura corretta: { address, nickname, role }
       if (user.role === 'FREELANCER') {
         navigate("/freelancer-dashboard");
       } else if (user.role === 'CLIENT') {
@@ -232,8 +229,6 @@ const NavBar = () => {
 
   // Determina se ci sono operazioni in corso
   const isOperationLoading = loading || isLoginLoading || isSignupLoading;
-
-  // --- Rendering del Componente ---
 
   return (
     <div className="nav-bar">

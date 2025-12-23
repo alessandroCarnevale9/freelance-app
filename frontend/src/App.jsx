@@ -97,7 +97,7 @@ function App() {
               }
             />
 
-            {/* Route profilo - NUOVE */}
+            {/* Route profilo */}
             <Route
               path="/profile/:address"
               element={

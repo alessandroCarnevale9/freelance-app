@@ -1,5 +1,4 @@
 .carousel-wrapper {
-    /* z-index: -1; */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -36,7 +35,7 @@
 
 .carousel-btn {
     background: white;
-    border: 2px solid #ddd;
+    border: none;
     border-radius: 50%;
     width: 50px;
     height: 50px;
@@ -50,6 +49,14 @@
     top: 50%;
     transform: translateY(-50%);
     z-index: 10;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-btn svg {
+    width: 24px;
+    height: 24px;
+    color: #333;
+    transition: all 0.3s ease;
 }
 
 .carousel-btn:first-of-type {
@@ -61,21 +68,31 @@
 }
 
 .carousel-btn:hover:not(:disabled) {
-    background: #f0f0f0;
+    background: #90BFE5;
     transform: translateY(-50%) scale(1.1);
-    border-color: #999;
+    box-shadow: 0 6px 20px rgba(144, 191, 229, 0.4);
+}
+
+.carousel-btn:hover:not(:disabled) svg {
+    color: white;
+    transform: scale(1.1);
 }
 
 .carousel-btn:disabled {
     opacity: 0.3;
     cursor: not-allowed;
+    background: #f5f5f5;
+}
+
+.carousel-btn:disabled svg {
+    color: #999;
 }
 
 .carousel-btn:active:not(:disabled) {
     transform: translateY(-50%) scale(0.95);
 }
 
-/* Indicatori */
+/* --- Indicatori --- */
 .carousel-indicators {
     display: flex;
     gap: 8px;
@@ -87,22 +104,23 @@
     height: 10px;
     border-radius: 50%;
     border: none;
-    background: #ddd;
+    background: #D5D5D5;
     cursor: pointer;
     transition: all 0.3s ease;
     padding: 0;
 }
 
 .carousel-dot.active {
-    background: #333;
-    transform: scale(1.2);
+    background: #90BFE5;
+    transform: scale(1.3);
 }
 
 .carousel-dot:hover {
-    background: #999;
+    background: #CEE9ED;
+    transform: scale(1.2);
 }
 
-/* Tablet (640px - 1024px) */
+
 @media (min-width: 640px) and (max-width: 1024px) {
     .carousel-wrapper {
         padding: 0 40px;
@@ -113,8 +131,13 @@
     }
 
     .carousel-btn {
-        width: 55px;
-        height: 55px;
+        width: 60px;
+        height: 60px;
+    }
+
+    .carousel-btn svg {
+        width: 28px;
+        height: 28px;
     }
 
     .carousel-btn:first-of-type {
@@ -140,7 +163,6 @@
     }
 }
 
-/* Smartphone (< 640px) */
 @media (max-width: 639px) {
     .carousel-wrapper {
         padding: 0 10px;
@@ -151,8 +173,14 @@
     }
 
     .carousel-btn {
-        width: 40px;
-        height: 40px;
+        width: 45px;
+        height: 45px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .carousel-btn svg {
+        width: 20px;
+        height: 20px;
     }
 
     .carousel-btn:first-of-type {
@@ -161,6 +189,10 @@
 
     .carousel-btn:nth-of-type(2) {
         right: 5px;
+    }
+
+    .carousel-btn:hover:not(:disabled) {
+        transform: translateY(-50%) scale(1.08);
     }
 
     /* Card dimensioni normali su smartphone */
@@ -185,10 +217,20 @@
         width: 8px;
         height: 8px;
     }
+
+    .carousel-dot.active {
+        transform: scale(1.4);
+    }
 }
 
 @media (max-width: 480px) {
     .carousel-btn {
-        display: flex;
+        width: 40px;
+        height: 40px;
+    }
+
+    .carousel-btn svg {
+        width: 18px;
+        height: 18px;
     }
 }

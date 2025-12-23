@@ -31,7 +31,7 @@ export const AuthContextProvider = ({ children }) => {
     setLoading(false); // Fine caricamento
   }, []);
 
-  // Log per debug (opzionale, puoi rimuoverlo)
+  // Log per debug
   useEffect(() => {
     console.log('AuthContext state: ', state);
   }, [state]);
