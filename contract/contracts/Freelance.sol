@@ -19,6 +19,7 @@ contract Freelance is ReentrancyGuard {
     uint256 public announcementCount;
 
     event AnnouncementCreated(uint256 indexed id, address indexed client, uint256 budget, uint256 deadline, string dataHash);
+    event FreelancerAssigned(uint256 indexed id, address indexed freelancer);
 
     function createAnnouncement(string calldata _dataHash, uint256 _deadline) external payable {
         require(msg.value > 0, "Budget > 0");
@@ -37,6 +38,15 @@ contract Freelance is ReentrancyGuard {
         emit AnnouncementCreated(announcementCount, msg.sender, msg.value, _deadline, _dataHash);
         announcementCount++;
     }
+
+    function setFreelancer(uint256 _jobId, address _freelancer) external {
+        Announcement storage job = announcements[_jobId];
+        require(job.state != JobStatus.Completed && job.state != JobStatus.Cancelled, "Job chiuso");
+        job.freelancer = _freelancer;
+        job.state = JobStatus.InProgress;
+        emit FreelancerAssigned(_jobId, _freelancer);
+    }
+
     //da rifare dopo, usando gli eventi
     function getOpenJobs() external view returns (Announcement[] memory, uint256[] memory) {
         // 1. Contiamo quanti lavori sono OPEN per sapere la dimensione dell'array

@@ -15,6 +15,7 @@ import {
 import "./HomePage.css";
 
 const HomePage = () => {
+  console.log("pinata",import.meta.env.VITE_PINATA_BEARER);
   return (
     <div className="home-page">
       <div className="home-page-welcome">

@@ -1,21 +1,30 @@
-import { AnnouncementCreated as AnnouncementCreatedEvent } from "../generated/Contract/Contract"
-import { AnnouncementCreated } from "../generated/schema"
+import { AnnouncementCreated as AnnouncementCreatedEvent, FreelancerAssigned } from "../generated/Contract/Contract"
+import { Announcement } from "../generated/schema"
 
 export function handleAnnouncementCreated(
   event: AnnouncementCreatedEvent
 ): void {
-  let entity = new AnnouncementCreated(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.internal_id = event.params.id
-  entity.client = event.params.client
-  entity.budget = event.params.budget
-  entity.deadline = event.params.deadline
-  entity.dataHash = event.params.dataHash
+  let job = new Announcement(event.params.id.toString())
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  job.client = event.params.client
+  job.budget = event.params.budget
+  job.status = "Open"
+  
+  job.deadline = event.params.deadline 
+  job.dataHash = event.params.dataHash
+  
+  job.createdAt = event.block.timestamp
+  job.updatedAt = event.block.timestamp
+  job.save()
+}
 
-  entity.save()
+export function handleFreelancerAssigned(event: FreelancerAssigned): void {
+  // Carichiamo l'entità esistente
+  let entity = Announcement.load(event.params.id.toString())
+
+  if (entity) {
+    entity.freelancer = event.params.freelancer
+    entity.status = "InProgress"
+    entity.save()
+  }
 }

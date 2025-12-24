@@ -16,11 +16,13 @@ dataSources:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - AnnouncementCreated
+        - Announcement
       abis:
         - name: Contract
-          file: ./abis/Contract.json
+          file: ../contract/artifacts/contracts/Freelance.sol/Freelance.json
       eventHandlers:
         - event: AnnouncementCreated(indexed uint256,indexed address,uint256,uint256,string)
           handler: handleAnnouncementCreated
+        - event: FreelancerAssigned(indexed uint256,indexed address)
+          handler: handleFreelancerAssigned
       file: ./src/contract.ts
