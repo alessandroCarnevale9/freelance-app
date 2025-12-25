@@ -8,6 +8,7 @@ import ClientDashboard from './pages/client-dashboard/ClientDashboard';
 import ProfileView from './pages/profile-view/ProfileView';
 import ProfileEdit from './pages/profile-edit/ProfileEdit';
 import NavBar from './components/nav/NavBar';
+import AnnouncementCreationPage from './pages/announcementCreation/AnnouncementCreationPage';
 
 // Componente per proteggere le route che richiedono autenticazione
 const ProtectedRoute = ({ children }) => {
@@ -93,6 +94,16 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ClientDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Route annunci - protetta */}
+            <Route
+              path="/dashboard/announcement-creation"
+              element={
+                <ProtectedRoute>
+                  <AnnouncementCreationPage />
                 </ProtectedRoute>
               }
             />
