@@ -1,13 +1,13 @@
 /* --- Variabili Dashboard --- */
 :root {
-    --dashboard-primary: #E2F6EF;
-    --dashboard-secondary: #CEE9ED;
-    --dashboard-accent: #90BFE5;
+    --dashboard-primary: #f5f8fb;
+    --dashboard-secondary: #e6eef3;
+    --dashboard-accent: #1693c6;
     --dashboard-neutral: #D5D5D5;
     --dashboard-text: #333;
     --dashboard-text-light: #666;
-    --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    --card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 8px 24px rgba(30, 40, 50, 0.04);
+    --card-shadow-hover: 0 8px 32px rgba(30, 40, 50, 0.08);
 }
 
 /* --- Container Principale --- */
@@ -43,22 +43,23 @@
 }
 
 .profile-btn {
-    background-color: var(--dashboard-secondary);
+    background-color: white;
     color: var(--dashboard-text);
-    border: none;
+    border: 1px solid rgba(10, 30, 50, 0.08);
     padding: 12px 24px;
     border-radius: 50px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 2px 8px rgba(22, 147, 198, 0.1);
 }
 
 .profile-btn:hover {
     background-color: var(--dashboard-accent);
-    transform: translateY(-3px);
-    box-shadow: var(--card-shadow-hover);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(22, 147, 198, 0.2);
 }
 
 /* --- Welcome Section --- */
@@ -69,8 +70,9 @@
 .welcome-card {
     background: white;
     padding: 30px;
-    border-radius: 20px;
+    border-radius: 10px;
     box-shadow: var(--card-shadow);
+    border: 1px solid rgba(10, 30, 50, 0.04);
     text-align: center;
 }
 
@@ -108,9 +110,9 @@
 
 .action-card {
     background: white;
-    border: none;
+    border: 1px solid rgba(10, 30, 50, 0.04);
     padding: 30px;
-    border-radius: 20px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: var(--card-shadow);
@@ -122,12 +124,13 @@
 }
 
 .action-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
     box-shadow: var(--card-shadow-hover);
 }
 
 .action-card.primary {
-    background: linear-gradient(135deg, var(--dashboard-accent), var(--dashboard-secondary));
+    background: var(--dashboard-accent);
+    color: white;
 }
 
 .action-icon {
@@ -141,6 +144,10 @@
     transition: transform 0.3s ease;
 }
 
+.action-card.primary .action-icon {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 .action-card:hover .action-icon {
     transform: scale(1.1);
 }
@@ -151,6 +158,10 @@
     color: var(--dashboard-text);
 }
 
+.action-card.primary .action-icon svg {
+    color: white;
+}
+
 .action-card h3 {
     color: var(--dashboard-text);
     font-size: 1.2rem;
@@ -158,11 +169,19 @@
     font-weight: 700;
 }
 
+.action-card.primary h3 {
+    color: white;
+}
+
 .action-card p {
     color: var(--dashboard-text-light);
     font-size: 14px;
     margin: 0;
     line-height: 1.5;
+}
+
+.action-card.primary p {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 /* --- Dashboard Sections --- */
@@ -184,8 +203,9 @@
 .dashboard-card {
     background: white;
     padding: 24px;
-    border-radius: 20px;
+    border-radius: 10px;
     box-shadow: var(--card-shadow);
+    border: 1px solid rgba(10, 30, 50, 0.04);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -197,7 +217,7 @@
 }
 
 .dashboard-card.clickable:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     box-shadow: var(--card-shadow-hover);
 }
 
@@ -263,7 +283,7 @@
 }
 
 .dashboard-card:hover .link-text {
-    color: #7aa9d5;
+    color: #0d7aad;
 }
 
 /* --- Stats Section --- */
@@ -287,8 +307,9 @@
 .stat-item {
     background: white;
     padding: 24px;
-    border-radius: 20px;
+    border-radius: 10px;
     box-shadow: var(--card-shadow);
+    border: 1px solid rgba(10, 30, 50, 0.04);
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -312,7 +333,7 @@
 .profile-completeness {
     background: linear-gradient(135deg, var(--dashboard-secondary), var(--dashboard-accent));
     padding: 30px;
-    border-radius: 20px;
+    border-radius: 10px;
     box-shadow: var(--card-shadow);
     text-align: center;
 }
@@ -349,7 +370,7 @@
 .complete-profile-btn {
     background: white;
     color: var(--dashboard-text);
-    border: none;
+    border: 1px solid rgba(10, 30, 50, 0.08);
     padding: 12px 32px;
     border-radius: 50px;
     font-size: 16px;
@@ -360,8 +381,10 @@
 }
 
 .complete-profile-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    background: var(--dashboard-accent);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(22, 147, 198, 0.2);
 }
 
 /* --- Responsive --- */

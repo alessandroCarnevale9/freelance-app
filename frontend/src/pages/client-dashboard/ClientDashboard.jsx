@@ -37,7 +37,7 @@ const ClientDashboard = () => {
                     <div className="actions-grid">
                         <button
                             className="action-card primary"
-                            onClick={() => navigate('/jobs/create')}
+                            onClick={() => navigate('/dashboard/announcement-creation')}
                         >
                             <div className="action-icon">
                                 <AddToQueueIcon width={48} height={48} />
