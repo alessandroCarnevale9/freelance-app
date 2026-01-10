@@ -1,0 +1,11 @@
+type Announcement @entity(immutable: false) {
+  id: ID!
+  client: Bytes! # address
+  freelancer: Bytes # address (può essere null)
+  budget: BigInt!
+  deadline: BigInt!
+  dataHash: String!
+  status: String! # Salviamo lo stato come stringa leggibile
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}

@@ -1,7 +1,10 @@
 import { useState, useRef } from "react";
 import "./AnnouncementCreationPage.css";
+import { ethers } from 'ethers';
+import FreelanceABI from '../../../../contract/artifacts/contracts/Freelance.sol/Freelance.json';
 
 const AnnouncementCreationPage = () => {
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [skillsInput, setSkillsInput] = useState("");
@@ -35,7 +38,7 @@ const AnnouncementCreationPage = () => {
       setErrors((prev) => ({ ...prev, requirement: true }));
       return;
     }
-    setRequirements((prev) => [...prev, requirementInput.trim()]);
+    setRequirements((prev) => [...prev, {requirement: requirementInput.trim(), done: false}]);
     setRequirementInput("");
     setErrors((prev) => ({ ...prev, requirement: false }));
   };
@@ -46,7 +49,48 @@ const AnnouncementCreationPage = () => {
   const handleDateIconClick = () =>
     dateRef.current?.showPicker?.() || dateRef.current?.focus();
 
-  const handleSubmit = (e) => {
+  const uploadToIPFS = async (data) => {
+    const url = "https://api.pinata.cloud/pinning/pinJSONToIPFS"
+
+    const body = JSON.stringify({
+      pinataOptions: { cidVersion: 1 },
+      pinataMetadata: { name: `announcement-${Date.now()}.json` },
+      pinataContent: data
+    });
+
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': import.meta.env.VITE_PINATA_BEARER
+        },
+        body: body
+      })
+      const data = await res.json();
+      return data.IpfsHash;
+    } catch (error) {
+      console.error("Errore IPFS:", error);
+      throw new Error("Fallimento upload IPFS");
+    }
+  }
+
+  const unpinFromIPFS = async (cid) => {
+    try {
+      const url = `https://api.pinata.cloud/pinning/unpin/${cid}`;
+      await fetch(url, {
+        method: "DELETE",
+        headers: {
+          'Authorization': import.meta.env.VITE_PINATA_BEARER
+        }
+      });
+      console.log(`Rollback: CID ${cid} rimosso da Pinata.`);
+    } catch (error) {
+      console.error("Errore durante il rollback IPFS:", error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e?.preventDefault?.();
     const newErrors = {};
     if (!title.trim()) newErrors.title = true;
@@ -63,16 +107,53 @@ const AnnouncementCreationPage = () => {
       return;
     }
 
+    const ipfsData = {
+      description,
+      requirements
+      }
+
     const payload = {
       title,
-      description,
       skills,
       budget: budget ? Number(budget) : null,
       deadline,
-      requirements,
     };
 
-    console.log("submit payload", payload);
+    console.log("ipfs data", ipfsData);
+    console.log("transaction data", payload);
+
+    let uploadedCID = null;
+
+    try {
+      uploadedCID = await uploadToIPFS(ipfsData);
+      console.log("CID caricato:", uploadedCID);
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(import.meta.env.VITE_CONTRACT_ADDRESS, FreelanceABI.abi, signer);
+
+      const budgetInWei = ethers.utils.parseEther(budget);;
+      const deadlineTimestamp = Math.floor(new Date(deadline).getTime() / 1000);
+
+      const tx = await contract.createAnnouncement(
+        uploadedCID,
+        deadlineTimestamp,
+        { value: budgetInWei }
+      )
+
+      console.log("Transazione inviata. In attesa di mining...");
+      await tx.wait();
+    } catch (error) {
+      console.error("Errore processo:", error);
+      alert("Errore: " + error.message);
+
+      // --- ROLLBACK: Se avevamo caricato qualcosa, togliamolo ---
+      if (uploadedCid) {
+        console.log("Transazione fallita. Rimozione dati IPFS...");
+        await unpinFromIPFS(uploadedCid);
+        console.log("Dati ripuliti.");
+      }
+    }
   };
 
   return (
@@ -247,10 +328,10 @@ const AnnouncementCreationPage = () => {
               <ul className="req-list">
                 {requirements.map((r, i) => (
                   <li key={r + i} className="req-item">
-                    <span>{r}</span>
+                    <span>{r.requirement}</span>
                     <button
                       type="button"
-                      className="remove-req"
+                      className="btn small remove-req"
                       onClick={() => removeRequirement(i)}
                     >
                       Remove

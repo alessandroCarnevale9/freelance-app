@@ -16,6 +16,7 @@
 
 /* --- Welcome Section --- */
 .home-page-welcome {
+  height: 60vh;
   background: linear-gradient(to right, var(--accent-blue), var(--primary-bg));
   width: 100%;
   display: flex;
