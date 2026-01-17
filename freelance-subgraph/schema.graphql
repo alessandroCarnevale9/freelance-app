@@ -1,11 +1,23 @@
 type Announcement @entity(immutable: false) {
   id: ID!
-  client: Bytes! # address
-  freelancer: Bytes # address (può essere null)
+  client: Bytes!
+  freelancer: Bytes
   budget: BigInt!
   deadline: BigInt!
   dataHash: String!
-  status: String! # Salviamo lo stato come stringa leggibile
+  status: String!    # Open, InProgress, Presentation, Completed, Cancelled
   createdAt: BigInt!
   updatedAt: BigInt!
+  
+  # Relazione inversa: un annuncio può avere un pagamento associato
+  payments: [Payment!]! @derivedFrom(field: "announcement")
+}
+
+type Payment @entity(immutable: false) {
+  id: ID!
+  announcement: Announcement! # Collegamento all'annuncio
+  recipient: Bytes!           # Chi ha ricevuto i soldi (Freelancer o Client)
+  amount: BigInt!             # Quanto è stato pagato
+  timestamp: BigInt!
+  type: String!               # "Payment" (al freelancer) o "Refund" (al client)
 }

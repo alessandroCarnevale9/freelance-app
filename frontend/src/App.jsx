@@ -4,11 +4,16 @@ import { useAuthContext } from './hooks/useAuthContext';
 import HomePage from './pages/home/HomePage';
 import RegistrationPage from './pages/registration/RegistrationPage';
 import FreelancerDashboard from './pages/freelancer-dashboard/FreelancerDashboard';
+import Dashboard from './pages/dashboard/DashboardPage';
 import ClientDashboard from './pages/client-dashboard/ClientDashboard';
 import ProfileView from './pages/profile-view/ProfileView';
 import ProfileEdit from './pages/profile-edit/ProfileEdit';
 import NavBar from './components/nav/NavBar';
 import AnnouncementCreationPage from './pages/announcementCreation/AnnouncementCreationPage';
+import AnnouncementListPage from './pages/announcementsList/AnnouncementListPage';
+import AnnouncementDetailsPage from './pages/announcementDetails/AnnouncementDetailsPage';
+import AnnouncementReviewPage from './pages/announcementReviewClient/AnnouncementReviewPage';
+import AnnouncementReviewFreelancerPage from './pages/announcementReviewFreelancer/AnnouncementReviewFreelancerPage';
 
 // Componente per proteggere le route che richiedono autenticazione
 const ProtectedRoute = ({ children }) => {
@@ -93,7 +98,7 @@ function App() {
               path="/client-dashboard"
               element={
                 <ProtectedRoute>
-                  <ClientDashboard />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
@@ -104,6 +109,42 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AnnouncementCreationPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/announcements-list"
+              element = {
+                <ProtectedRoute>
+                  <AnnouncementListPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/announcements-list/:id"
+              element = {
+                <ProtectedRoute>
+                  <AnnouncementDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/client-dashboard/announcement/:id"
+              element={
+                <ProtectedRoute>
+                  <AnnouncementReviewPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path='/freelancer-dashboard/announcement/:id'
+              element={
+                <ProtectedRoute>
+                  <AnnouncementReviewFreelancerPage />
                 </ProtectedRoute>
               }
             />

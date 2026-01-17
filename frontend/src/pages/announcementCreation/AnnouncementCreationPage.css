@@ -243,6 +243,17 @@
     margin-top: 6px;
 }
 
+.toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+}
+
 /* responsive */
 @media (max-width: 920px) {
     .row {
@@ -252,5 +263,11 @@
     .date-wrapper,
     .skills-input {
         width: 100%;
+    }
+
+    .toast-container {
+        left: 12px;
+        right: 12px;
+        max-width: none;
     }
 }

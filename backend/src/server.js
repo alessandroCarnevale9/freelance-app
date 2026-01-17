@@ -12,10 +12,11 @@ const app = express();
 (async () => {
   try {
     const db = new Database(process.env.MONGODB_URI);
-    const bucket = await db.connect("images");
+    const buckets = await db.connect();
 
-    const authRoutes = require("./routes/auth")(bucket);
+    const authRoutes = require("./routes/auth")(buckets.imagesBucket);
     const userRoutes = require("./routes/user");
+    const announcementRoutes = require("./routes/announcement")(buckets.projectsBucket);
 
     // Middlewares di base
     app.use(express.json());
@@ -25,6 +26,7 @@ const app = express();
     // Routes
     app.use("/api/auth", authRoutes);
     app.use("/api/users", userRoutes);
+    app.use("/api/announcement", announcementRoutes)
 
     // Route 404 per endpoint non trovati
     app.use((req, res) => {

@@ -1,5 +1,4 @@
 const mongoose = require(`mongoose`)
-const { link } = require("../routes/user")
 
 const ProjectSchema = new mongoose.Schema({
     title: {

@@ -25,4 +25,12 @@ dataSources:
           handler: handleAnnouncementCreated
         - event: FreelancerAssigned(indexed uint256,indexed address)
           handler: handleFreelancerAssigned
+        - event: JobStateChanged(indexed uint256,uint8)
+          handler: handleJobStateChanged
+        - event: FundsReleased(indexed uint256,indexed address,uint256)
+          handler: handleFundsReleased
+        - event: AnnouncementUpdated(indexed uint256,string)
+          handler: handleAnnouncementUpdated
+        - event: FreelancerRevoked(indexed uint256)
+          handler: handleFreelancerRevoked
       file: ./src/contract.ts

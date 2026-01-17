@@ -1,0 +1,231 @@
+:root {
+    --bg: #f5f8fb;
+    --card: #fff;
+    --muted: #6b7b88;
+    --primary: #1693c6;
+    --input-border: #e6eef3;
+    --shadow: rgba(30, 40, 50, 0.04);
+}
+
+.ann-list-page {
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 28px;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    color: #172133;
+    box-sizing: border-box;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* header */
+.list-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.muted {
+    color: var(--muted);
+    margin-top: 6px;
+}
+
+/* cards list */
+.cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 18px;
+}
+
+/* single card */
+.announce-card {
+    background: transparent;
+}
+
+.announce-card .card-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 18px;
+    box-shadow: 0 6px 18px var(--shadow);
+    border: 1px solid rgba(10, 30, 50, 0.04);
+    gap: 12px;
+}
+
+.card-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.card-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    margin-left: 12px;
+    justify-content: space-between;
+}
+
+.meta-actions {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+    ;
+}
+
+/* title & summary */
+.announce-title {
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.announce-summary {
+    margin: 0 0 12px 0;
+    color: #3a4a55;
+    line-height: 1.4;
+
+    /* multiline ellipsis: mostra al massimo 3 righe */
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* cambiare il numero per più/meno righe */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+}
+
+/* riduci a 2 righe su schermi piccoli */
+@media (max-width: 560px) {
+  .announce-summary {
+    -webkit-line-clamp: 2;
+  }
+}
+
+/* skills */
+.skills-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.skill-pill {
+    background: #eef6fb;
+    color: #1b5570;
+    padding: 6px 8px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* meta row */
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.meta-left {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.budget {
+    font-weight: 700;
+    color: #23333d;
+    margin-right: 8px;
+}
+
+.deadline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* actions */
+.btn.small.ghost {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: transparent;
+    color: #123;
+    text-decoration: none;
+    font-weight: 600;
+
+}
+
+.btn.small.primary {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+
+    /* status badge on the side */
+    .status-badge {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        background: #f0f4f6;
+        color: #5c6b78;
+    }
+
+    .status-badge.open {
+        background: rgba(22, 147, 198, 0.08);
+        color: var(--primary);
+    }
+
+    .status-badge.closed {
+        background: rgba(224, 155, 40, 0.06);
+        color: #e09b28;
+    }
+
+    /* responsive */
+    @media (max-width: 900px) {
+        .card-inner {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-side {
+            margin-left: 0;
+            align-self: flex-end;
+        }
+
+        .meta-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .announce-title {
+            font-size: 16px;
+        }
+
+        .skill-pill {
+            font-size: 12px;
+            padding: 5px 7px;
+        }
+
+        .card-inner {
+            padding: 14px;
+        }
+    }
+}

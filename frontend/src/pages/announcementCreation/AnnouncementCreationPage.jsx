@@ -1,9 +1,13 @@
 import { useState, useRef } from "react";
 import "./AnnouncementCreationPage.css";
-import { ethers } from 'ethers';
-import FreelanceABI from '../../../../contract/artifacts/contracts/Freelance.sol/Freelance.json';
+import { ethers } from "ethers";
+import { useNavigate } from "react-router-dom";
+import Toast from "../../components/toast/Toast";
+import FreelanceABI from "../../../../contract/artifacts/contracts/Freelance.sol/Freelance.json";
 
 const AnnouncementCreationPage = () => {
+
+  const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -14,7 +18,17 @@ const AnnouncementCreationPage = () => {
   const [requirementInput, setRequirementInput] = useState("");
   const [requirements, setRequirements] = useState([]);
   const [errors, setErrors] = useState({});
+  const [toasts, setToasts] = useState([]);
   const dateRef = useRef(null);
+
+  const addToast = (message, type = "error") => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
 
   const addSkill = () => {
     const s = skillsInput
@@ -38,7 +52,10 @@ const AnnouncementCreationPage = () => {
       setErrors((prev) => ({ ...prev, requirement: true }));
       return;
     }
-    setRequirements((prev) => [...prev, {requirement: requirementInput.trim(), done: false}]);
+    setRequirements((prev) => [
+      ...prev,
+      { requirement: requirementInput.trim(), done: false },
+    ]);
     setRequirementInput("");
     setErrors((prev) => ({ ...prev, requirement: false }));
   };
@@ -50,30 +67,30 @@ const AnnouncementCreationPage = () => {
     dateRef.current?.showPicker?.() || dateRef.current?.focus();
 
   const uploadToIPFS = async (data) => {
-    const url = "https://api.pinata.cloud/pinning/pinJSONToIPFS"
+    const url = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
 
     const body = JSON.stringify({
       pinataOptions: { cidVersion: 1 },
       pinataMetadata: { name: `announcement-${Date.now()}.json` },
-      pinataContent: data
+      pinataContent: data,
     });
 
     try {
       const res = await fetch(url, {
         method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': import.meta.env.VITE_PINATA_BEARER
+          "Content-Type": "application/json",
+          Authorization: import.meta.env.VITE_PINATA_BEARER,
         },
-        body: body
-      })
+        body: body,
+      });
       const data = await res.json();
       return data.IpfsHash;
     } catch (error) {
       console.error("Errore IPFS:", error);
       throw new Error("Fallimento upload IPFS");
     }
-  }
+  };
 
   const unpinFromIPFS = async (cid) => {
     try {
@@ -81,8 +98,8 @@ const AnnouncementCreationPage = () => {
       await fetch(url, {
         method: "DELETE",
         headers: {
-          'Authorization': import.meta.env.VITE_PINATA_BEARER
-        }
+          Authorization: import.meta.env.VITE_PINATA_BEARER,
+        },
       });
       console.log(`Rollback: CID ${cid} rimosso da Pinata.`);
     } catch (error) {
@@ -100,7 +117,8 @@ const AnnouncementCreationPage = () => {
 
     if (!budget || String(budget).trim() === "") newErrors.budget = true;
 
-    if (!requirements || requirements.length === 0) newErrors.requirement = true;
+    if (!requirements || requirements.length === 0)
+      newErrors.requirement = true;
 
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
@@ -108,49 +126,47 @@ const AnnouncementCreationPage = () => {
     }
 
     const ipfsData = {
-      description,
-      requirements
-      }
-
-    const payload = {
       title,
-      skills,
-      budget: budget ? Number(budget) : null,
-      deadline,
+      description,
+      requirements,
+      skills
     };
-
-    console.log("ipfs data", ipfsData);
-    console.log("transaction data", payload);
 
     let uploadedCID = null;
 
     try {
       uploadedCID = await uploadToIPFS(ipfsData);
-      console.log("CID caricato:", uploadedCID);
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
-      const contract = new ethers.Contract(import.meta.env.VITE_CONTRACT_ADDRESS, FreelanceABI.abi, signer);
+      const contract = new ethers.Contract(
+        import.meta.env.VITE_CONTRACT_ADDRESS,
+        FreelanceABI.abi,
+        signer
+      );
 
-      const budgetInWei = ethers.utils.parseEther(budget);;
+      const budgetInWei = ethers.utils.parseEther(budget);
       const deadlineTimestamp = Math.floor(new Date(deadline).getTime() / 1000);
 
       const tx = await contract.createAnnouncement(
         uploadedCID,
         deadlineTimestamp,
         { value: budgetInWei }
-      )
+      );
 
-      console.log("Transazione inviata. In attesa di mining...");
       await tx.wait();
+  
+      addToast("Annuncio creato con successo!", "success");
+
+      setTimeout(() => navigate("/dashboard"), 2000);
     } catch (error) {
       console.error("Errore processo:", error);
-      alert("Errore: " + error.message);
+      addToast("Errore durante la creazione dell'annuncio.");
 
       // --- ROLLBACK: Se avevamo caricato qualcosa, togliamolo ---
-      if (uploadedCid) {
+      if (uploadedCID) {
         console.log("Transazione fallita. Rimozione dati IPFS...");
-        await unpinFromIPFS(uploadedCid);
+        await unpinFromIPFS(uploadedCID);
         console.log("Dati ripuliti.");
       }
     }
@@ -180,9 +196,7 @@ const AnnouncementCreationPage = () => {
               }}
             />
             {errors.title && (
-              <div className="text-error">
-                Inserisci il titolo del progetto
-              </div>
+              <div className="text-error">Inserisci il titolo del progetto</div>
             )}
 
             <label className="label">Descrizione del progetto *</label>
@@ -250,13 +264,12 @@ const AnnouncementCreationPage = () => {
                   value={budget}
                   onChange={(e) => {
                     setBudget(e.target.value.replace(/[^\d.]/g, ""));
-                    if (errors.budget) setErrors((prev) => ({ ...prev, budget: false }));
+                    if (errors.budget)
+                      setErrors((prev) => ({ ...prev, budget: false }));
                   }}
                 />
                 {errors.budget && (
-                  <div className="text-error">
-                    Inserisci il budget
-                  </div>
+                  <div className="text-error">Inserisci il budget</div>
                 )}
               </div>
 
@@ -266,11 +279,14 @@ const AnnouncementCreationPage = () => {
                   <input
                     ref={dateRef}
                     type="date"
-                    className={`input date-input ${errors.deadline ? "input-error" : ""}`}
+                    className={`input date-input ${
+                      errors.deadline ? "input-error" : ""
+                    }`}
                     value={deadline}
                     onChange={(e) => {
                       setDeadline(e.target.value);
-                      if (errors.deadline) setErrors((prev) => ({ ...prev, deadline: false }));
+                      if (errors.deadline)
+                        setErrors((prev) => ({ ...prev, deadline: false }));
                     }}
                   />
                   <button
@@ -278,20 +294,19 @@ const AnnouncementCreationPage = () => {
                     className="date-icon"
                     onClick={handleDateIconClick}
                     aria-label="Open calendar"
-                  >
-                  </button>
+                  ></button>
                 </div>
                 {errors.deadline && (
-                  <div className="text-error">
-                    Deadline obbligatoria
-                  </div>
+                  <div className="text-error">Deadline obbligatoria</div>
                 )}
               </div>
             </div>
           </section>
 
           <section className="section-requirements">
-            <h3 className="section-requirements-title">Requisiti di completamento</h3>
+            <h3 className="section-requirements-title">
+              Requisiti di completamento
+            </h3>
             <p className="section-requirements-desctiption">
               Tutti i requisiti che il freelancer deve soddisfare per completare
               per considerare il progetto come finito.
@@ -353,6 +368,16 @@ const AnnouncementCreationPage = () => {
             </button>
           </div>
         </form>
+      </div>
+      <div className="toast-container">
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
       </div>
     </div>
   );
