@@ -19,6 +19,7 @@ const AnnouncementCreationPage = () => {
   const [requirements, setRequirements] = useState([]);
   const [errors, setErrors] = useState({});
   const [toasts, setToasts] = useState([]);
+  const [isActionLoading, setIsActionLoading] = useState(false);
   const dateRef = useRef(null);
 
   const addToast = (message, type = "error") => {
@@ -125,6 +126,8 @@ const AnnouncementCreationPage = () => {
       return;
     }
 
+    setIsActionLoading(true);
+
     const ipfsData = {
       title,
       description,
@@ -169,6 +172,8 @@ const AnnouncementCreationPage = () => {
         await unpinFromIPFS(uploadedCID);
         console.log("Dati ripuliti.");
       }
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
@@ -379,6 +384,15 @@ const AnnouncementCreationPage = () => {
           />
         ))}
       </div>
+
+      {isActionLoading && (
+        <div className="loading-overlay">
+          <div className="loading-box">
+            <div className="spinner"></div>
+            <div className="loading-text">Creazione annuncio in corso...</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

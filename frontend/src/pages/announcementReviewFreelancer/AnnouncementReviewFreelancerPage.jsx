@@ -61,7 +61,7 @@ const AnnouncementReviewFreelancerPage = () => {
   const [projectName, setProjectName] = useState("");
 
   const [workFile, setWorkFile] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   useEffect(() => {
     // const preloaded = location?.state?.announcement;
@@ -204,7 +204,7 @@ const AnnouncementReviewFreelancerPage = () => {
       return;
     }
 
-    setIsSubmitting(true);
+    setIsActionLoading(true);
     addToast("Presentazione del lavoro in corso...", "info");
 
     // Qui andrebbe la logica per caricare il file su IPFS o un altro storage.
@@ -247,11 +247,12 @@ const AnnouncementReviewFreelancerPage = () => {
         "error"
       );
     } finally {
-      setIsSubmitting(false);
+      setIsActionLoading(false);
     }
   };
 
   const handleDeleteWork = async () => {
+    setIsActionLoading(true);
     try {
       const response = await fetch(
         `/api/announcement/announcements/project-delete/${id}`,
@@ -280,6 +281,8 @@ const AnnouncementReviewFreelancerPage = () => {
         err.message || "Errore durante l'eliminazione del file",
         "error"
       );
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
@@ -410,15 +413,15 @@ const AnnouncementReviewFreelancerPage = () => {
                   type="file"
                   id="work-file"
                   onChange={handleFileChange}
-                  disabled={isSubmitting}
+                  disabled={isActionLoading}
                 />
               </div>
               <button
                 type="submit"
                 className="btn primary"
-                disabled={!workFile || isSubmitting}
+                disabled={!workFile || isActionLoading}
               >
-                {isSubmitting ? "Invio in corso..." : "Invia per revisione"}
+                {isActionLoading ? "Invio in corso..." : "Invia per revisione"}
               </button>
             </form>
           </section>
@@ -464,6 +467,15 @@ const AnnouncementReviewFreelancerPage = () => {
           />
         ))}
       </div>
+
+      {isActionLoading && (
+        <div className="loading-overlay">
+          <div className="loading-box">
+            <div className="spinner"></div>
+            <div className="loading-text">Operazione in corso...</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

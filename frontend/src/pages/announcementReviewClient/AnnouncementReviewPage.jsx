@@ -102,6 +102,7 @@ const AnnouncementReviewPage = () => {
   const [judgment, setJudgment] = useState("");
   const [reqStatus, setReqStatus] = useState({});
   const [workFile, setWorkFile] = useState("");
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   useEffect(() => {
     // const preloaded = location?.state?.announcement;
@@ -244,6 +245,7 @@ const AnnouncementReviewPage = () => {
   };
 
   const chooseCandidate = async (candidateId) => {
+    setIsActionLoading(true);
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
@@ -267,10 +269,13 @@ const AnnouncementReviewPage = () => {
     } catch (err) {
       console.error("Errore selezione candidato:", err);
       addToast("Errore durante la selezione del candidato", "error");
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
   const requirePresentation = async (announcementId) => {
+    setIsActionLoading(true);
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
@@ -290,10 +295,13 @@ const AnnouncementReviewPage = () => {
       }
     } catch (err) {
       addToast("Errore durante la transazione", "error");
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
   const submitJudgment = async (announcementId) => {
+    setIsActionLoading(true);
     try {
       switch (judgment) {
         case "completed":
@@ -453,6 +461,8 @@ const AnnouncementReviewPage = () => {
     } catch (err) {
       console.error("Errore invio giudizio:", err);
       addToast("Errore durante l'invio del giudizio", "error");
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
@@ -845,6 +855,15 @@ const AnnouncementReviewPage = () => {
           />
         ))}
       </div>
+
+      {isActionLoading && (
+        <div className="loading-overlay">
+          <div className="loading-box">
+            <div className="spinner"></div>
+            <div className="loading-text">Operazione in corso...</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

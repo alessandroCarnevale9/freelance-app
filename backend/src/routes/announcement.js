@@ -50,6 +50,8 @@ module.exports = (bucket) => {
                 return res.status(404).json({ error: 'Progetto non trovato' });
             }
 
+            res.set('Content-Disposition', `attachment; filename="${files[0].filename}"`);
+
             bucket.openDownloadStream(files[0]._id).pipe(res);
         } catch (e) {
             res.status(500).json({ error: e.message });

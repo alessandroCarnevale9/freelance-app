@@ -112,9 +112,14 @@ const getAnnouncementsForCandidate = async (req, res) => {
 
                     if (a.dataHash) {
                         try {
-                            const ipfsRes = await fetch(
+                            let ipfsRes = await fetch(
                                 `https://gateway.pinata.cloud/ipfs/${a.dataHash}`
                             );
+                            if (ipfsRes.status === 429) {
+                                ipfsRes = await fetch(
+                                    `https://dweb.link/ipfs/${a.dataHash}`
+                                );
+                            }
                             if (ipfsRes.ok) {
                                 const payload = await ipfsRes.json();
                                 title = payload.title || title;
@@ -200,9 +205,14 @@ const getRegistredAnnouncementsForCandidate = async (req, res) => {
 
                     if (a.dataHash) {
                         try {
-                            const ipfsRes = await fetch(
+                            let ipfsRes = await fetch(
                                 `https://gateway.pinata.cloud/ipfs/${a.dataHash}`
                             );
+                            if (ipfsRes.status === 429) {
+                                ipfsRes = await fetch(
+                                    `https://dweb.link/ipfs/${a.dataHash}`
+                                );
+                            }
                             if (ipfsRes.ok) {
                                 const payload = await ipfsRes.json();
                                 title = payload.title || title;
@@ -278,9 +288,14 @@ const getAnnouncementDetails = async (req, res) => {
         let meta = {};
         if (data.dataHash) {
             try {
-                const ipfsRes = await fetch(
+                let ipfsRes = await fetch(
                     `https://gateway.pinata.cloud/ipfs/${data.dataHash}`
                 );
+                if (ipfsRes.status === 429) {
+                    ipfsRes = await fetch(
+                        `https://dweb.link/ipfs/${data.dataHash}`
+                    );
+                }
                 if (ipfsRes.ok) meta = await ipfsRes.json();
             } catch (e) {
                 console.warn("IPFS read failed", e);
@@ -371,9 +386,14 @@ const getAnnouncementsForFreelancer = async (req, res) => {
 
                     if (a.dataHash) {
                         try {
-                            const ipfsRes = await fetch(
+                            let ipfsRes = await fetch(
                                 `https://gateway.pinata.cloud/ipfs/${a.dataHash}`
                             );
+                            if (ipfsRes.status === 429) {
+                                ipfsRes = await fetch(
+                                    `https://dweb.link/ipfs/${a.dataHash}`
+                                );
+                            }
                             if (ipfsRes.ok) {
                                 const payload = await ipfsRes.json();
                                 title = payload.title || title;
@@ -391,7 +411,7 @@ const getAnnouncementsForFreelancer = async (req, res) => {
                     if (work) {
                         status = "InProgress_Sent"
                     }
- 
+
                     return {
                         id: a.id,
                         title,
@@ -460,17 +480,25 @@ const getAnnouncementsForClient = async (req, res) => {
 
                     if (a.dataHash) {
                         try {
-                            const ipfsRes = await fetch(
+                            let ipfsRes = await fetch(
                                 `https://gateway.pinata.cloud/ipfs/${a.dataHash}`
                             );
+                            if (ipfsRes.status === 429) {
+                                ipfsRes = await fetch(
+                                    `https://dweb.link/ipfs/${a.dataHash}`
+                                );
+                            }
+
                             if (ipfsRes.ok) {
                                 const payload = await ipfsRes.json();
+    
                                 title = payload.title || title;
                                 description = payload.description || "";
                                 requirements = payload.requirements || [];
                                 skills = payload.skills || [];
                             }
                         } catch (e) {
+                            console.log("ipfs read failed")
                             throw Error("IPFS read failed", e);
                         }
                     }
@@ -480,7 +508,7 @@ const getAnnouncementsForClient = async (req, res) => {
                     if (work && status === "InProgress") {
                         status = "InProgress_Sent"
                     }
- 
+
                     return {
                         id: a.id,
                         title,
@@ -517,13 +545,15 @@ const uploadProjectFileForAnnouncement = (bucket) => {
 
         const file = req.files[0];
 
+        const fileName = file.originalname + "_" + Date.now()
+
         await new Promise((resolve, reject) => {
             const readableStream = new Readable();
             readableStream.push(file.buffer);
             readableStream.push(null);
 
             const uploadStream = bucket.openUploadStream(file.originalname, {
-                id: file.originalname + "_" + Date.now(),
+                id: fileName,
                 metadata: {
                     contentType: file.mimetype,
                 },
@@ -544,12 +574,12 @@ const uploadProjectFileForAnnouncement = (bucket) => {
         try {
             await Work.create({
                 announcementId,
-                workFileId: file.originalname
+                workFileId: fileName
             });
         } catch (dbErr) {
             console.error("DB Error, rolling back file:", dbErr);
             try {
-                await bucket.delete(file.originalname);
+                await bucket.delete(fileName);
             } catch (delErr) {
                 console.error("Impossibile cancellare file orfano:", delErr);
             }
@@ -575,32 +605,32 @@ const getUploadedProjectNameForAnnouncement = async (req, res) => {
 
 const deleteProjectFileForAnnouncement = (bucket) => {
     return async (req, res) => {
-    const { announcementId } = req.params;
+        const { announcementId } = req.params;
 
-    const work = await Work.findOne({ announcementId }).exec();
+        const work = await Work.findOne({ announcementId }).exec();
 
-    const workCopy = work;
+        const workCopy = work;
 
-    if (!work) {
-        throw new ApiError(404, "Nessun progetto caricato per questo annuncio");
-    }
-
-    await Work.deleteOne({ announcementId }).exec();
-
-    try {
-        await bucket.delete(work.workFileId);
-        res.status(200).json({ ok: true });
-    } catch (err) {
-        console.error("Impossibile cancellare il file dal bucket, rollback nel database:", err);
-        try {
-            await Work.create(workCopy);
-        } catch (dbErr) {
-            console.error("Rollback fallito, stato incoerente:", dbErr);
+        if (!work) {
+            throw new ApiError(404, "Nessun progetto caricato per questo annuncio");
         }
 
-        throw new ApiError(500, "Errore durante la cancellazione del file dal bucket");
+        try {
+            await bucket.delete(work.workFileId);
+            res.status(200).json({ ok: true });
+        } catch (err) {
+            console.error("Impossibile cancellare il file dal bucket, rollback nel database:", err);
+            try {
+                await Work.create(workCopy);
+            } catch (dbErr) {
+                console.error("Rollback fallito, stato incoerente:", dbErr);
+            }
+
+            throw new ApiError(500, "Errore durante la cancellazione del file dal bucket");
+        }
+
+        await Work.deleteOne({ announcementId }).exec();
     }
-}
 }
 
 module.exports = {

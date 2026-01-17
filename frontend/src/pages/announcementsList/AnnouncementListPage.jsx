@@ -22,6 +22,7 @@ const AnnouncementListPage = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   const fetchedRef = useRef(false);
 
@@ -95,6 +96,7 @@ const AnnouncementListPage = () => {
   }, [user?.address]);
 
   const candidateClick = async (announcmentId) => {
+    setIsActionLoading(true);
     try {
       const result = await fetch("/api/announcement/add-candidate", {
         method: "POST",
@@ -114,10 +116,13 @@ const AnnouncementListPage = () => {
       });
     } catch (err) {
       console.error("Errore durante la candidatura:", err);
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
   const removeCandidateClick = async (announcmentId) => {
+    setIsActionLoading(true);
     try {
       const result = await fetch("/api/announcement/delete-candidate", {
         method: "DELETE",
@@ -137,6 +142,8 @@ const AnnouncementListPage = () => {
       });
     } catch (err) {
       console.error("Errore durante la candidatura:", err);
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
@@ -257,6 +264,15 @@ const AnnouncementListPage = () => {
             <div className="muted">Nessun annuncio trovato.</div>
           )}
         </main>
+
+        {isActionLoading && (
+          <div className="loading-overlay">
+            <div className="loading-box">
+              <div className="spinner"></div>
+              <div className="loading-text">Operazione in corso...</div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

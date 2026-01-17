@@ -54,6 +54,7 @@ const AnnouncementDetails = () => {
   const [announcement, setAnnouncement] = useState(null);
   const [error, setError] = useState(null);
   const [toasts, setToasts] = useState([]);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   useEffect(() => {
     console.log(location.state);
@@ -102,9 +103,14 @@ const AnnouncementDetails = () => {
         let meta = {};
         if (data.dataHash) {
           try {
-            const ipfsRes = await fetch(
-              `https://gateway.pinata.cloud/ipfs/${data.dataHash}`
-            );
+            let ipfsRes = await fetch(
+                                `https://gateway.pinata.cloud/ipfs/${a.dataHash}`
+                            );
+                            if(ipfsRes.status === 429) {
+                                ipfsRes = await fetch(
+                                `https://dweb.link/ipfs/${a.dataHash}`
+                            );
+                            }
             if (ipfsRes.ok) meta = await ipfsRes.json();
           } catch (e) {
             console.warn("IPFS read failed", e);
@@ -140,6 +146,7 @@ const AnnouncementDetails = () => {
   }, [id]);
 
   const candidateClick = async (announcmentId) => {
+    setIsActionLoading(true);
     try {
       const result = await fetch("/api/announcement/add-candidate", {
         method: "POST",
@@ -158,10 +165,13 @@ const AnnouncementDetails = () => {
       setTimeout(() => navigate(-1), 2000);
     } catch (err) {
       console.error("Errore durante la candidatura:", err);
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
   const removeCandidateClick = async (announcmentId) => {
+    setIsActionLoading(true);
     try {
       const result = await fetch("/api/announcement/delete-candidate", {
         method: "DELETE",
@@ -180,6 +190,8 @@ const AnnouncementDetails = () => {
       setTimeout(() => navigate(-1), 2000);
     } catch (err) {
       console.error("Errore durante la candidatura:", err);
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
@@ -307,6 +319,15 @@ const AnnouncementDetails = () => {
           />
         ))}
       </div>
+
+      {isActionLoading && (
+        <div className="loading-overlay">
+          <div className="loading-box">
+            <div className="spinner"></div>
+            <div className="loading-text">Operazione in corso...</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
