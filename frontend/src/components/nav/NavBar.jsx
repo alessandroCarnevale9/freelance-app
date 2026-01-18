@@ -391,8 +391,8 @@ const NavBar = () => {
             <div className="spinner"></div>
             <div className="loading-text">
               {showRegistrationModal
-                ? "Registrazione in corso..."
-                : "Login in corso..."}
+                ? "Registrazione in corso\ncontrolla il wallet MetaMask"
+                : "Login in corso\ncontrolla il wallet MetaMask"}
             </div>
           </div>
         </div>

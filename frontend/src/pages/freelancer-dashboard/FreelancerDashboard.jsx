@@ -19,7 +19,10 @@ const FreelancerDashboard = () => {
         `/api/announcement/announcements/registred/number/${user.address}`,
         {
           method: "GET",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          },
         }
       );
 
@@ -30,7 +33,10 @@ const FreelancerDashboard = () => {
         `/api/announcement/announcements/freelancer/${user.address}`,
         {
           method: "GET",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          },
         }
       )
 

@@ -102,15 +102,12 @@ const AnnouncementReviewPage = () => {
   const [judgment, setJudgment] = useState("");
   const [reqStatus, setReqStatus] = useState({});
   const [workFile, setWorkFile] = useState("");
-  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState({
+    state: false,
+    message: "",
+  });
 
   useEffect(() => {
-    // const preloaded = location?.state?.announcement;
-    // if (preloaded && String(preloaded.id) === String(id)) {
-    //   setAnnouncement(preloaded);
-    //   setLoading(false);
-    //   return;
-    // }
     if (!id) return setLoading(false);
     let ignore = false;
 
@@ -120,10 +117,13 @@ const AnnouncementReviewPage = () => {
 
       try {
         const res = await fetch(
-          `/api/announcement/announcements/details/${id}`,
+          `/api/announcement/announcements/client-details/${id}`,
           {
             method: "GET",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
           }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -217,7 +217,10 @@ const AnnouncementReviewPage = () => {
           `/api/announcement/announcements/project-name/${id}`,
           {
             method: "GET",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
           }
         );
 
@@ -226,14 +229,14 @@ const AnnouncementReviewPage = () => {
 
         setWorkFile(json.workFileId);
       } catch (err) {
-        console.log("fetch project error")
+        console.log("fetch project error");
       }
-    }
+    };
 
-    if(status == "Completed") {
+    if (status == "Completed") {
       fetchProject();
     }
-  }, [status])
+  }, [status]);
 
   const addToast = (message, type = "error") => {
     const id = Date.now();
@@ -245,7 +248,10 @@ const AnnouncementReviewPage = () => {
   };
 
   const chooseCandidate = async (candidateId) => {
-    setIsActionLoading(true);
+    setIsActionLoading({
+      state: true,
+      message: "Selezione del candidato\ncontrolla il walllet MetaMask",
+    });
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
@@ -261,7 +267,10 @@ const AnnouncementReviewPage = () => {
         addToast("Candidato selezionato", "success");
         await fetch(`/api/announcement/candidates/${announcement.id}`, {
           method: "DELETE",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          },
         });
         setStatus("InProgress");
         setStatusLabel("In lavorazione");
@@ -270,12 +279,22 @@ const AnnouncementReviewPage = () => {
       console.error("Errore selezione candidato:", err);
       addToast("Errore durante la selezione del candidato", "error");
     } finally {
-      setIsActionLoading(false);
+      setIsActionLoading({ ...isActionLoading, state: false });
     }
+
+    const c = candidates.find((c) => c.id === candidateId);
+
+    setAnnouncement((prev) => ({
+      ...prev,
+      freelancer: {
+        address: c.id,
+        nickname: c.name
+      },
+      }))
   };
 
   const requirePresentation = async (announcementId) => {
-    setIsActionLoading(true);
+    setIsActionLoading({state: true, message: "Richiesta di revisione\ncontrolla il wallet MetaMask"});
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
@@ -296,12 +315,12 @@ const AnnouncementReviewPage = () => {
     } catch (err) {
       addToast("Errore durante la transazione", "error");
     } finally {
-      setIsActionLoading(false);
+      setIsActionLoading({...isActionLoading, state: false});
     }
   };
 
   const submitJudgment = async (announcementId) => {
-    setIsActionLoading(true);
+    setIsActionLoading({state: true, message: "Invia giudizio\ncontrolla il wallet MetaMask"});
     try {
       switch (judgment) {
         case "completed":
@@ -333,6 +352,7 @@ const AnnouncementReviewPage = () => {
                   method: "DELETE",
                   headers: {
                     "Content-Type": "application/json",
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                   },
                 }
               );
@@ -401,14 +421,16 @@ const AnnouncementReviewPage = () => {
             }
           }
           break;
-        case "incomplete_change": {
-          try {
+        case "incomplete_change":
+          {
+            try {
               const response = await fetch(
                 `/api/announcement/announcements/project-delete/${id}`,
                 {
                   method: "DELETE",
                   headers: {
                     "Content-Type": "application/json",
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                   },
                 }
               );
@@ -439,9 +461,7 @@ const AnnouncementReviewPage = () => {
                 FreelanceABI.abi,
                 signer
               );
-              const tx = await contract.reOpenAnnouncement(
-                announcementId
-              );
+              const tx = await contract.reOpenAnnouncement(announcementId);
               const receipt = await tx.wait();
 
               if (receipt.status === 1) {
@@ -455,14 +475,14 @@ const AnnouncementReviewPage = () => {
               console.error("Errore aggiornamento annuncio:", err);
               addToast("Errore durante l'aggiornamento dell'annuncio", "error");
             }
-        }
+          }
           break;
       }
     } catch (err) {
       console.error("Errore invio giudizio:", err);
       addToast("Errore durante l'invio del giudizio", "error");
     } finally {
-      setIsActionLoading(false);
+      setIsActionLoading({...isActionLoading, state: false});
     }
   };
 
@@ -482,7 +502,15 @@ const AnnouncementReviewPage = () => {
   };
 
   if (loading)
-    return <div className="announce-details-page">Caricamento...</div>;
+    return (
+      <div className="loading-overlay">
+        <div className="loading-box">
+          <div className="spinner"></div>
+          <div className="loading-text">Caricamento</div>
+        </div>
+      </div>
+    );
+
   if (error)
     return <div className="announce-details-page">Errore: {error}</div>;
   if (!announcement)
@@ -613,9 +641,6 @@ const AnnouncementReviewPage = () => {
               <div className="candidate-meta">
                 <div className="candidate-name">
                   {announcement.freelancer.nickname || "Freelancer"}
-                </div>
-                <div className="muted small">
-                  {announcement.freelancer.email}
                 </div>
               </div>
             </div>
@@ -754,7 +779,7 @@ const AnnouncementReviewPage = () => {
         </div>
       )}
 
-      {announcement.status === "Open" && (
+      {status === "Open" && (
         <div className="candidates-card">
           <section className="candidates-section">
             <div className="candidates-header">
@@ -822,7 +847,7 @@ const AnnouncementReviewPage = () => {
         </div>
       )}
 
-      {(status === "Completed" && workFile) && (
+      {status === "Completed" && workFile && (
         <div className="details-card" style={{ marginTop: "20px" }}>
           <header className="details-header">
             <h3 className="details-title" style={{ fontSize: "18px" }}>
@@ -836,7 +861,9 @@ const AnnouncementReviewPage = () => {
             <div style={{ marginTop: "20px" }}>
               <button
                 className="btn primary"
-                onClick={() => { window.location.href = `/api/announcement/project-download/${workFile}`; }}
+                onClick={() => {
+                  window.location.href = `/api/announcement/project-download/${announcement.id}/${workFile}`;
+                }}
               >
                 Scarica Progetto
               </button>
@@ -856,11 +883,11 @@ const AnnouncementReviewPage = () => {
         ))}
       </div>
 
-      {isActionLoading && (
+      {isActionLoading.state && (
         <div className="loading-overlay">
           <div className="loading-box">
             <div className="spinner"></div>
-            <div className="loading-text">Operazione in corso...</div>
+            <div className="loading-text">{isActionLoading.message}</div>
           </div>
         </div>
       )}

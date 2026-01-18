@@ -1,6 +1,7 @@
 const express = require('express');
 const verifyJWT = require('../middlewares/verifyJWT');
 const multer = require('multer');
+const verifyRole = require('../middlewares/verifyRole');
 const router = express.Router();
 
 const {
@@ -17,28 +18,84 @@ const {
     getUploadedProjectNameForAnnouncement,
     deleteProjectFileForAnnouncement,
     getAnnouncementsForClient,
+    getAnnouncementDetailsClient,
+    getAnnouncementDetailsFreelancer
 } = require('../controllers/announcementController');
 
 module.exports = (bucket) => {
     const storage = multer.memoryStorage();
     const upload = multer({ storage });
-    // router.use(verifyJWT);
+    router.use(verifyJWT);
 
-    router.post('/add-candidate', addCandidate);
-    router.delete('/delete-candidate', deleteCandidate);
-    router.delete('/candidates/:announcementId', deleteAllCandidatesForAnnouncement);
-    router.get('/candidates/:announcementId', getCandidatesByAnnouncement);
-    router.get('/announcements/:candidateAddress', getAnnouncementsForCandidate);
-    router.get('/announcements/registred/:candidateAddress', getRegistredAnnouncementsForCandidate);
-    router.get('/announcements/registred/number/:candidateAddress', getRegistredAnnouncementsNumberForCandidate)
+    router.post('/add-candidate', verifyRole('FREELANCER'), addCandidate);
+    router.delete('/delete-candidate', verifyRole('FREELANCER'), deleteCandidate);
+    router.delete('/candidates/:announcementId', verifyRole('CLIENT'), deleteAllCandidatesForAnnouncement);
+    router.get('/candidates/:announcementId', verifyRole('CLIENT'), getCandidatesByAnnouncement);
+    router.get('/announcements/:candidateAddress', verifyRole('FREELANCER'), getAnnouncementsForCandidate);
+    router.get('/announcements/registred/:candidateAddress', verifyRole('FREELANCER'), getRegistredAnnouncementsForCandidate);
+    router.get('/announcements/registred/number/:candidateAddress', verifyRole('FREELANCER'), getRegistredAnnouncementsNumberForCandidate)
     router.get('/announcements/details/:announcementId', getAnnouncementDetails);
-    router.get('/announcements/freelancer/:freelancerAddress', getAnnouncementsForFreelancer)
-    router.get('/announcements/client/:clientAddress', getAnnouncementsForClient)
-    router.post('/announcements/freelancer/project-upload', upload.any(), uploadProjectFileForAnnouncement(bucket))
+    router.get('/announcements/client-details/:announcementId', verifyRole('CLIENT'), getAnnouncementDetailsClient);
+    router.get('/announcements/freelancer-details/:announcementId', verifyRole('FREELANCER'), getAnnouncementDetailsFreelancer);
+    router.get('/announcements/freelancer/:freelancerAddress', verifyRole('FREELANCER'), getAnnouncementsForFreelancer)
+    router.get('/announcements/client/:clientAddress', verifyRole('CLIENT'), getAnnouncementsForClient)
+    router.post('/announcements/freelancer/project-upload', upload.any(), verifyRole('FREELANCER'), uploadProjectFileForAnnouncement(bucket))
     router.get('/announcements/project-name/:announcementId', getUploadedProjectNameForAnnouncement)
     router.delete('/announcements/project-delete/:announcementId', deleteProjectFileForAnnouncement(bucket))
-    router.get('/project-download/:partialId', async (req, res) => {
+    router.get('/project-download/:announcementId/:partialId', verifyRole('CLIENT'), async (req, res) => {
         if (!bucket) return res.status(500).json({ error: 'DB non pronto' });
+
+        const {announcementId} = req.params;
+
+        if (!announcementId) {
+            throw new ApiError(400, "Missing announcementId");
+        }
+
+        try {
+            const query = `
+                query {
+                  announcements(where: { id: "${announcementId}" }) {
+                    id
+                    client
+                    budget
+                    deadline
+                    createdAt
+                    dataHash
+                    status
+                    freelancer
+                  }
+                }
+              `;
+
+            const result = await fetch(
+                "http://localhost:8000/subgraphs/name/freelance-subgraph",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query }),
+                }
+            );
+            if (!result.ok) throw new Error(`HTTP ${result.status}`);
+            const json = await result.json();
+            if (json.errors)
+                throw new Error(json.errors.map((e) => e.message).join(", "));
+            const data = json.data?.announcements?.[0];
+            if (!data) throw new Error("Annuncio non trovato");
+
+            if (
+                (data.client === req.userAddress && data.status !== "Completed")
+            ) {
+                throw new ApiError(403, "Non autorizzato");
+            }
+        } catch (err) {
+            if (err instanceof ApiError) {
+                throw err;
+
+            } else {
+                throw new ApiError(500, err);
+            }
+        }
+
 
         try {
             const regex = new RegExp(req.params.partialId, 'i');

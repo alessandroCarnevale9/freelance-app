@@ -11,6 +11,10 @@ dotenv.config();
 const addCandidate = async (req, res) => {
     const { candidateAddress, announcement } = req.body;
 
+    if (candidateAddress !== req.userAddress) {
+        throw new ApiError(403, "Non autorizzato");
+    }
+
     try {
         await Announcement.create({ announcement, candidateAddress });
         res.status(201).json({ ok: true });
@@ -19,12 +23,21 @@ const addCandidate = async (req, res) => {
             throw new ApiError(409, "Candidatura già esistente per questo annuncio");
         }
 
-        throw new ApiError(500, err.message);
+        if (err instanceof ApiError) {
+            throw err;
+
+        } else {
+            throw new ApiError(500, err);
+        }
     }
 }
 
 const deleteCandidate = async (req, res) => {
     const { candidateAddress, announcement } = req.body;
+
+    if (candidateAddress !== req.userAddress) {
+        throw new ApiError(403, "Non autorizzato");
+    }
 
     const result = await Announcement.deleteOne({ announcement, candidateAddress });
 
@@ -37,20 +50,113 @@ const deleteCandidate = async (req, res) => {
 
 const deleteAllCandidatesForAnnouncement = async (req, res) => {
     const { announcementId } = req.params;
-    const result = await Announcement.deleteMany({ announcement: announcementId });
-    res.status(200).json({ ok: true, deletedCount: result.deletedCount });
+    try {
+        const query = `
+        query {
+          announcements(where: { id: "${announcementId}" }) {
+            id
+            client
+            budget
+            deadline
+            createdAt
+            dataHash
+            status
+            freelancer
+          }
+        }
+      `;
+
+        const result = await fetch(
+            "http://localhost:8000/subgraphs/name/freelance-subgraph",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query }),
+            }
+        );
+        if (!result.ok) throw new Error(`HTTP ${result.status}`);
+        const json = await result.json();
+        if (json.errors)
+            throw new Error(json.errors.map((e) => e.message).join(", "));
+        const data = json.data?.announcements?.[0];
+        if (!data) throw new Error("Annuncio non trovato");
+
+        if (data.client !== req.userAddress) {
+            throw new ApiError(403, "Non autorizzato");
+        }
+
+        const resultDeletion = await Announcement.deleteMany({ announcement: announcementId });
+        res.status(200).json({ ok: true, deletedCount: resultDeletion.deletedCount });
+    } catch (err) {
+        if (err instanceof ApiError) {
+            throw err;
+
+        } else {
+            throw new ApiError(500, err);
+        }
+    }
+
 }
 
 const getCandidatesByAnnouncement = async (req, res) => {
     const { announcementId } = req.params;
 
-    const candidates = await Announcement.find({ announcement: announcementId }).exec();
+    try {
+        const query = `
+        query {
+          announcements(where: { id: "${announcementId}" }) {
+            id
+            client
+            budget
+            deadline
+            createdAt
+            dataHash
+            status
+            freelancer
+          }
+        }
+      `;
 
-    res.status(200).json(candidates);
+        const result = await fetch(
+            "http://localhost:8000/subgraphs/name/freelance-subgraph",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query }),
+            }
+        );
+        if (!result.ok) throw new Error(`HTTP ${result.status}`);
+        const json = await result.json();
+        if (json.errors)
+            throw new Error(json.errors.map((e) => e.message).join(", "));
+        const data = json.data?.announcements?.[0];
+        if (!data) throw new Error("Annuncio non trovato");
+
+        if (data.client !== req.userAddress) {
+            throw new ApiError(403, "Non autorizzato");
+        }
+
+        const candidates = await Announcement.find({ announcement: announcementId }).exec();
+
+        res.status(200).json(candidates);
+    } catch (err) {
+        if (err instanceof ApiError) {
+            throw err;
+
+        } else {
+            throw new ApiError(500, err);
+        }
+    }
+
+
 }
 
 const getRegistredAnnouncementsNumberForCandidate = async (req, res) => {
     const { candidateAddress } = req.params;
+
+    if (candidateAddress !== req.userAddress) {
+        throw new ApiError(403, "Non autorizzato");
+    }
 
     try {
         const registredCandidations = await Announcement.find({ candidateAddress: candidateAddress.toLowerCase() }).lean().exec();
@@ -58,7 +164,12 @@ const getRegistredAnnouncementsNumberForCandidate = async (req, res) => {
 
         return res.status(200).json(count);
     } catch (err) {
-        throw new ApiError(500, err.message || String(err));
+        if (err instanceof ApiError) {
+            throw err;
+
+        } else {
+            throw new ApiError(500, err.message || String(err));
+        }
     }
 }
 
@@ -150,13 +261,22 @@ const getAnnouncementsForCandidate = async (req, res) => {
         } catch (e) {
             throw e;
         }
-    } catch (e) {
-        throw new ApiError(500, e);
+    } catch (err) {
+        if (err instanceof ApiError) {
+            throw err;
+
+        } else {
+            throw new ApiError(500, err);
+        }
     }
 }
 
 const getRegistredAnnouncementsForCandidate = async (req, res) => {
     const { candidateAddress } = req.params;
+
+    if (candidateAddress !== req.userAddress) {
+        throw new ApiError(403, "Non autorizzato");
+    }
 
     const registredCandidations = await Announcement.find({ candidateAddress: candidateAddress.toLowerCase() }).lean().exec();
 
@@ -243,8 +363,13 @@ const getRegistredAnnouncementsForCandidate = async (req, res) => {
         } catch (e) {
             throw e;
         }
-    } catch (e) {
-        throw new ApiError(500, e);
+    } catch (err) {
+        if (err instanceof ApiError) {
+            throw err;
+
+        } else {
+            throw new ApiError(500, err);
+        }
     }
 }
 
@@ -336,13 +461,226 @@ const getAnnouncementDetails = async (req, res) => {
 
         res.status(200).json({ announcement: announcementDetails, candidates, });
     } catch (err) {
-        throw new ApiError(500, err);
+        if (err instanceof ApiError) {
+            throw err;
+
+        } else {
+            throw new ApiError(500, err);
+        }
+    }
+
+}
+
+const getAnnouncementDetailsClient = async (req, res) => {
+    const { announcementId } = req.params;
+
+    try {
+        const announcements = await Announcement.find({ announcement: announcementId }).exec();
+        const candidates = await User.find({ address: { $in: announcements.map(a => a.candidateAddress) } }).exec();
+
+        const query = `
+        query {
+          announcements(where: { id: "${announcementId}" }) {
+            id
+            client
+            budget
+            deadline
+            createdAt
+            dataHash
+            status
+            freelancer
+          }
+        }
+      `;
+
+        const result = await fetch(
+            "http://localhost:8000/subgraphs/name/freelance-subgraph",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query }),
+            }
+        );
+        if (!result.ok) throw new Error(`HTTP ${result.status}`);
+        const json = await result.json();
+        if (json.errors)
+            throw new Error(json.errors.map((e) => e.message).join(", "));
+        const data = json.data?.announcements?.[0];
+        if (!data) throw new Error("Annuncio non trovato");
+
+        if (data.client !== req.userAddress) {
+            throw new ApiError(403, "Non autorizzato");
+        }
+
+        let meta = {};
+        if (data.dataHash) {
+            try {
+                let ipfsRes = await fetch(
+                    `https://gateway.pinata.cloud/ipfs/${data.dataHash}`
+                );
+                if (ipfsRes.status === 429) {
+                    ipfsRes = await fetch(
+                        `https://dweb.link/ipfs/${data.dataHash}`
+                    );
+                }
+                if (ipfsRes.ok) meta = await ipfsRes.json();
+            } catch (e) {
+                console.warn("IPFS read failed", e);
+            }
+        }
+
+        const work = await Work.findOne({ announcementId: announcementId }).exec();
+        let status = data.status;
+        if (work && data.status == "InProgress") {
+            status = "InProgress_Sent"
+        }
+
+        let freelancerOutput = null;
+        const freelancerData = await User.findOne({ address: data.freelancer }).exec();
+        if (freelancerData) {
+            freelancerOutput = freelancerData
+        }
+
+        const announcementDetails = {
+            id: data.id,
+            client: meta.clientName || data.client || "—",
+            title: meta.title || `Annuncio #${data.id}`,
+            summary: meta.description || "",
+            skills: meta.skills || [],
+            requirements: meta.requirements || [],
+            budget:
+                data.budget != null
+                    ? String(data.budget).includes(".")
+                        ? data.budget
+                        : ethers.utils.formatEther(data.budget)
+                    : "—",
+            deadline: data.deadline || null,
+            createdAt: data.createdAt || null,
+            status: status,
+            freelancer: freelancerOutput,
+            dataHash: data.dataHash
+        }
+
+        res.status(200).json({ announcement: announcementDetails, candidates, });
+    } catch (err) {
+        if (err instanceof ApiError) {
+            throw err;
+
+        } else {
+            throw new ApiError(500, err);
+        }
+    }
+
+}
+
+const getAnnouncementDetailsFreelancer = async (req, res) => {
+    const { announcementId } = req.params;
+
+    try {
+        const announcements = await Announcement.find({ announcement: announcementId }).exec();
+        const candidates = await User.find({ address: { $in: announcements.map(a => a.candidateAddress) } }).exec();
+
+        const query = `
+        query {
+          announcements(where: { id: "${announcementId}" }) {
+            id
+            client
+            budget
+            deadline
+            createdAt
+            dataHash
+            status
+            freelancer
+          }
+        }
+      `;
+
+        const result = await fetch(
+            "http://localhost:8000/subgraphs/name/freelance-subgraph",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query }),
+            }
+        );
+        if (!result.ok) throw new Error(`HTTP ${result.status}`);
+        const json = await result.json();
+        if (json.errors)
+            throw new Error(json.errors.map((e) => e.message).join(", "));
+        const data = json.data?.announcements?.[0];
+        if (!data) throw new Error("Annuncio non trovato");
+
+        if (data.freelancer !== req.userAddress) {
+            throw new ApiError(403, "Non autorizzato");
+        }
+
+        let meta = {};
+        if (data.dataHash) {
+            try {
+                let ipfsRes = await fetch(
+                    `https://gateway.pinata.cloud/ipfs/${data.dataHash}`
+                );
+                if (ipfsRes.status === 429) {
+                    ipfsRes = await fetch(
+                        `https://dweb.link/ipfs/${data.dataHash}`
+                    );
+                }
+                if (ipfsRes.ok) meta = await ipfsRes.json();
+            } catch (e) {
+                console.warn("IPFS read failed", e);
+            }
+        }
+
+        const work = await Work.findOne({ announcementId: announcementId }).exec();
+        let status = data.status;
+        if (work && data.status == "InProgress") {
+            status = "InProgress_Sent"
+        }
+
+        let freelancerOutput = null;
+        const freelancerData = await User.findOne({ address: data.freelancer }).exec();
+        if (freelancerData) {
+            freelancerOutput = freelancerData
+        }
+
+        const announcementDetails = {
+            id: data.id,
+            client: meta.clientName || data.client || "—",
+            title: meta.title || `Annuncio #${data.id}`,
+            summary: meta.description || "",
+            skills: meta.skills || [],
+            requirements: meta.requirements || [],
+            budget:
+                data.budget != null
+                    ? String(data.budget).includes(".")
+                        ? data.budget
+                        : ethers.utils.formatEther(data.budget)
+                    : "—",
+            deadline: data.deadline || null,
+            createdAt: data.createdAt || null,
+            status: status,
+            freelancer: freelancerOutput,
+            dataHash: data.dataHash
+        }
+
+        res.status(200).json({ announcement: announcementDetails, candidates, });
+    } catch (err) {
+        if (err instanceof ApiError) {
+            throw err;
+
+        } else {
+            throw new ApiError(500, err);
+        }
     }
 
 }
 
 const getAnnouncementsForFreelancer = async (req, res) => {
     const { freelancerAddress } = req.params;
+
+    if (freelancerAddress !== req.userAddress) {
+        throw new ApiError(403, "Non autorizzato");
+    }
 
     const query = `
         query {
@@ -431,12 +769,21 @@ const getAnnouncementsForFreelancer = async (req, res) => {
             throw e;
         }
     } catch (err) {
-        throw new ApiError(500, err.message || String(err));
+        if (err instanceof ApiError) {
+            throw err;
+
+        } else {
+            throw new ApiError(500, err);
+        }
     }
 }
 
 const getAnnouncementsForClient = async (req, res) => {
     const { clientAddress } = req.params;
+
+    if (clientAddress !== req.userAddress) {
+        throw new ApiError(403, "Non autorizzato");
+    }
 
     const query = `
         query {
@@ -491,7 +838,7 @@ const getAnnouncementsForClient = async (req, res) => {
 
                             if (ipfsRes.ok) {
                                 const payload = await ipfsRes.json();
-    
+
                                 title = payload.title || title;
                                 description = payload.description || "";
                                 requirements = payload.requirements || [];
@@ -528,7 +875,12 @@ const getAnnouncementsForClient = async (req, res) => {
             throw e;
         }
     } catch (err) {
-        throw new ApiError(500, err.message || String(err));
+        if (err instanceof ApiError) {
+            throw err;
+
+        } else {
+            throw new ApiError(500, err);
+        }
     }
 }
 
@@ -607,6 +959,54 @@ const deleteProjectFileForAnnouncement = (bucket) => {
     return async (req, res) => {
         const { announcementId } = req.params;
 
+        try {
+            const query = `
+        query {
+          announcements(where: { id: "${announcementId}" }) {
+            id
+            client
+            budget
+            deadline
+            createdAt
+            dataHash
+            status
+            freelancer
+          }
+        }
+      `;
+
+            const result = await fetch(
+                "http://localhost:8000/subgraphs/name/freelance-subgraph",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query }),
+                }
+            );
+            if (!result.ok) throw new Error(`HTTP ${result.status}`);
+            const json = await result.json();
+            if (json.errors)
+                throw new Error(json.errors.map((e) => e.message).join(", "));
+            const data = json.data?.announcements?.[0];
+            if (!data) throw new Error("Annuncio non trovato");
+
+            if (
+                (data.freelancer !== req.userAddress) ||
+                (data.client !== req.userAddress) ||
+                (data.freelancer === req.userAddress && data.status !== "InProgress") ||
+                (data.client === req.userAddress && (data.status !== "InProgress" || data.status !== "Presentation"))
+            ) {
+                throw new ApiError(403, "Non autorizzato");
+            }
+        } catch (err) {
+            if (err instanceof ApiError) {
+                throw err;
+
+            } else {
+                throw new ApiError(500, err);
+            }
+        }
+
         const work = await Work.findOne({ announcementId }).exec();
 
         const workCopy = work;
@@ -647,4 +1047,6 @@ module.exports = {
     getUploadedProjectNameForAnnouncement,
     deleteProjectFileForAnnouncement,
     getAnnouncementsForClient,
+    getAnnouncementDetailsClient,
+    getAnnouncementDetailsFreelancer
 };

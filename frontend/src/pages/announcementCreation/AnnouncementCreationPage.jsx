@@ -389,7 +389,7 @@ const AnnouncementCreationPage = () => {
         <div className="loading-overlay">
           <div className="loading-box">
             <div className="spinner"></div>
-            <div className="loading-text">Creazione annuncio in corso...</div>
+            <div className="loading-text">Creazione annuncio in corso<br />controlla il tuo wallet MetaMask</div>
           </div>
         </div>
       )}

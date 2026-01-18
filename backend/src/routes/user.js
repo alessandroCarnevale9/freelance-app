@@ -6,7 +6,7 @@ const {
     getUserStats,
     deleteUser
 } = require('../controllers/userController');
-const { validateUser } = require('../middlewares/userValidation');
+
 const verifyJWT = require('../middlewares/verifyJWT');
 
 const router = express.Router();

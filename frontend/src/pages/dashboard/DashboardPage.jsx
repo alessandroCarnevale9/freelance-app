@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { ethers } from "ethers";
 import { ChevronRightIcon } from "../../icons";
-
+import Toast from "../../components/toast/Toast";
+import FreelanceABI from "../../../../contract/artifacts/contracts/Freelance.sol/Freelance.json";
 const formatDate = (value) => {
   if (value === null || value === undefined || value === "") return "—";
 
@@ -60,16 +61,22 @@ const DashboardPage = () => {
 
   // --- STATO PAGINAZIONE ---
   const [currentPage, setCurrentPage] = useState(1);
+  const [toasts, setToasts] = useState([]);
+  const [isActionLoading, setIsActionLoading] = useState({state: false, message: ""});
   const itemsPerPage = 5;
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
+      setIsActionLoading({state: true, message: "Caricamento"});
       try {
         const resFreelancerAnnouncements = await fetch(
           `/api/announcement/announcements/client/${user.address}`,
           {
             method: "GET",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
           }
         );
 
@@ -79,6 +86,7 @@ const DashboardPage = () => {
       } catch (err) {
         console.error("Errore fetch announcements:", err);
       } finally {
+        setIsActionLoading({...isActionLoading, state: false});
       }
     };
 
@@ -103,6 +111,40 @@ const DashboardPage = () => {
 
     setStats(newStats);
   }, [announcements]);
+
+  const addToast = (message, type = "error") => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
+  const deleteAnnouncement = async (announcementId) => {
+    setIsActionLoading({state: true, message: "Eliminazione\ncontrolla il wallet MetaMask"});
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+        import.meta.env.VITE_CONTRACT_ADDRESS,
+        FreelanceABI.abi,
+        signer
+      );
+      const tx = await contract.cancelJob(announcementId);
+      const receipt = await tx.wait();
+
+      if (receipt.status === 1) {
+        addToast("Annuncio eliminato con successo", "success");
+        setAnnouncements((prev) => prev.filter((a) => a.id !== announcementId));
+      }
+    } catch (err) {
+      console.error("Errore selezione candidato:", err);
+      addToast("Errore durante la selezione del candidato", "error");
+    } finally {
+      setIsActionLoading({...isActionLoading, state:false});
+    }
+  };
 
   // --- LOGICA PAGINAZIONE ---
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -219,21 +261,28 @@ const DashboardPage = () => {
                   <td data-label="Deadline">{formatDate(a.deadline)}</td>
                   <td data-label="Azioni" className="actions-cell">
                     <button
-                      className="action-btn"
-                      title="Visualizza"
-                      onClick={() =>
-                        navigate(`/client-dashboard/announcement/${a.id}`, {
-                          state: { announcement: a },
-                        })
-                      }
-                    >
-                      Visualizza
-                    </button>
-                    <button className="action-btn" title="Modifica">
-                      Modifica
-                    </button>
+                        className="action-btn"
+                        title="Visualizza"
+                        onClick={() =>
+                          navigate(`/client-dashboard/announcement/${a.id}`, {
+                            state: { announcement: a },
+                          })
+                        }
+                      >
+                        Visualizza
+                      </button>
                     {a.status === "Open" && (
-                      <button className="action-btn danger" title="Elimina">
+                      <button className="action-btn" title="Modifica">
+                        Modifica
+                      </button>
+                    )}
+
+                    {a.status === "Open" && (
+                      <button
+                        className="action-btn danger"
+                        title="Elimina"
+                        onClick={() => deleteAnnouncement(a.id)}
+                      >
                         Elimina
                       </button>
                     )}
@@ -293,6 +342,25 @@ const DashboardPage = () => {
           </div>
         )}
       </section>
+      <div className="toast-container">
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </div>
+
+      {isActionLoading.state && (
+        <div className="loading-overlay">
+          <div className="loading-box">
+            <div className="spinner"></div>
+            <div className="loading-text">{isActionLoading.message}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

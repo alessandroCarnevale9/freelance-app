@@ -61,7 +61,7 @@ const AnnouncementReviewFreelancerPage = () => {
   const [projectName, setProjectName] = useState("");
 
   const [workFile, setWorkFile] = useState(null);
-  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState({state: false, message: ""});
 
   useEffect(() => {
     // const preloaded = location?.state?.announcement;
@@ -78,10 +78,13 @@ const AnnouncementReviewFreelancerPage = () => {
 
       try {
         const res = await fetch(
-          `/api/announcement/announcements/details/${id}`,
+          `/api/announcement/announcements/freelancer-details/${id}`,
           {
             method: "GET",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
           }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -163,7 +166,10 @@ const AnnouncementReviewFreelancerPage = () => {
             `/api/announcement/announcements/project-name/${id}`,
             {
               method: "GET",
-              headers: { "Content-Type": "application/json" },
+              headers: { 
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+              },
             }
           );
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -204,16 +210,7 @@ const AnnouncementReviewFreelancerPage = () => {
       return;
     }
 
-    setIsActionLoading(true);
-    addToast("Presentazione del lavoro in corso...", "info");
-
-    // Qui andrebbe la logica per caricare il file su IPFS o un altro storage.
-    // Per ora, simuliamo solo la chiamata al contratto.
-    // const formData = new FormData();
-    // formData.append('file', workFile);
-    // const uploadRes = await fetch('/api/upload-work', { method: 'POST', body: formData });
-    // const { fileUrl } = await uploadRes.json();
-    // Il client verrebbe notificato dell'URL del file off-chain.
+    setIsActionLoading({state: true, message: "Invio del lavoro in corso"});
 
     try {
       const formData = new FormData();
@@ -227,6 +224,10 @@ const AnnouncementReviewFreelancerPage = () => {
         "/api/announcement/announcements/freelancer/project-upload",
         {
           method: "POST",
+          headers: {
+            "Content-Type": "multipart/form-data",
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          },
           body: formData,
         }
       );
@@ -247,12 +248,12 @@ const AnnouncementReviewFreelancerPage = () => {
         "error"
       );
     } finally {
-      setIsActionLoading(false);
+      setIsActionLoading({...isActionLoading, state: false});
     }
   };
 
   const handleDeleteWork = async () => {
-    setIsActionLoading(true);
+    setIsActionLoading({state: true, message: "Eliminazione del file in corso"});
     try {
       const response = await fetch(
         `/api/announcement/announcements/project-delete/${id}`,
@@ -260,14 +261,17 @@ const AnnouncementReviewFreelancerPage = () => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-          }
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          },
         }
       );
 
       if (!response.ok) {
         const errData = await response.json();
         throw new Error(
-          errData.error || errData.message || "Errore durante l'eliminazione del file"
+          errData.error ||
+            errData.message ||
+            "Errore durante l'eliminazione del file"
         );
       }
 
@@ -282,12 +286,19 @@ const AnnouncementReviewFreelancerPage = () => {
         "error"
       );
     } finally {
-      setIsActionLoading(false);
+      setIsActionLoading({...isActionLoading, state: false});
     }
   };
 
   if (loading)
-    return <div className="announce-details-page">Caricamento...</div>;
+    return (
+      <div className="loading-overlay">
+        <div className="loading-box">
+          <div className="spinner"></div>
+          <div className="loading-text">Caricamento</div>
+        </div>
+      </div>
+    );
   if (error)
     return <div className="announce-details-page">Errore: {error}</div>;
   if (!announcement)
@@ -413,15 +424,15 @@ const AnnouncementReviewFreelancerPage = () => {
                   type="file"
                   id="work-file"
                   onChange={handleFileChange}
-                  disabled={isActionLoading}
+                  disabled={isActionLoading.state}
                 />
               </div>
               <button
                 type="submit"
                 className="btn primary"
-                disabled={!workFile || isActionLoading}
+                disabled={!workFile || isActionLoading.state}
               >
-                {isActionLoading ? "Invio in corso..." : "Invia per revisione"}
+                {isActionLoading.state ? "Invio in corso..." : "Invia per revisione"}
               </button>
             </form>
           </section>
@@ -435,7 +446,14 @@ const AnnouncementReviewFreelancerPage = () => {
             <p className="muted small">
               Hai caricato il seguente file per la revisione.
             </p>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "10px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                marginTop: "10px",
+              }}
+            >
               <div className="file-upload-label" style={{ cursor: "default" }}>
                 <span className="file-name">{projectName}</span>
               </div>
@@ -468,11 +486,11 @@ const AnnouncementReviewFreelancerPage = () => {
         ))}
       </div>
 
-      {isActionLoading && (
+      {isActionLoading.state && (
         <div className="loading-overlay">
           <div className="loading-box">
             <div className="spinner"></div>
-            <div className="loading-text">Operazione in corso...</div>
+            <div className="loading-text">{isActionLoading.message}</div>
           </div>
         </div>
       )}

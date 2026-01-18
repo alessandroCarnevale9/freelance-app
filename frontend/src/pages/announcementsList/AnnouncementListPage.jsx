@@ -22,7 +22,7 @@ const AnnouncementListPage = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState({state: false, message: ""});
 
   const fetchedRef = useRef(false);
 
@@ -42,7 +42,10 @@ const AnnouncementListPage = () => {
             `/api/announcement/announcements/${user.address}`,
             {
               method: "GET",
-              headers: { "Content-Type": "application/json" },
+              headers: { 
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+              },
             }
           );
 
@@ -59,7 +62,10 @@ const AnnouncementListPage = () => {
             `/api/announcement/announcements/registred/${user.address}`,
             {
               method: "GET",
-              headers: { "Content-Type": "application/json" },
+              headers: { 
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+              },
             }
           );
 
@@ -76,7 +82,10 @@ const AnnouncementListPage = () => {
             `/api/announcement/announcements/freelancer/${user.address}`,
             {
               method: "GET",
-              headers: { "Content-Type": "application/json" },
+              headers: { 
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+              },
             }
           );
 
@@ -96,12 +105,13 @@ const AnnouncementListPage = () => {
   }, [user?.address]);
 
   const candidateClick = async (announcmentId) => {
-    setIsActionLoading(true);
+    setIsActionLoading({state: true, message: "Invio della candidatura in corso"});
     try {
       const result = await fetch("/api/announcement/add-candidate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
         body: JSON.stringify({
           announcement: announcmentId,
@@ -117,17 +127,18 @@ const AnnouncementListPage = () => {
     } catch (err) {
       console.error("Errore durante la candidatura:", err);
     } finally {
-      setIsActionLoading(false);
+      setIsActionLoading({...isActionLoading,state: false});
     }
   };
 
   const removeCandidateClick = async (announcmentId) => {
-    setIsActionLoading(true);
+    setIsActionLoading({state: true, message: "Rimozione della candidatura in corso"});
     try {
       const result = await fetch("/api/announcement/delete-candidate", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
         body: JSON.stringify({
           announcement: announcmentId,
@@ -143,7 +154,7 @@ const AnnouncementListPage = () => {
     } catch (err) {
       console.error("Errore durante la candidatura:", err);
     } finally {
-      setIsActionLoading(false);
+      setIsActionLoading({...isActionLoading,state: false});
     }
   };
 
@@ -265,11 +276,11 @@ const AnnouncementListPage = () => {
           )}
         </main>
 
-        {isActionLoading && (
+        {isActionLoading.state && (
           <div className="loading-overlay">
             <div className="loading-box">
               <div className="spinner"></div>
-              <div className="loading-text">Operazione in corso...</div>
+              <div className="loading-text">{isActionLoading.message}</div>
             </div>
           </div>
         )}

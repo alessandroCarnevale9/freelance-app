@@ -9,6 +9,13 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
+  if(err.status) {
+    return res.status(err.status).json({
+      error: err.message,
+      success: false
+    })
+  }
+
   // Errori di validazione Mongoose
   if (err.name === "ValidationError") {
     const messages = Object.values(err.errors).map((e) => e.message);

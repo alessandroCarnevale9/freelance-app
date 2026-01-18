@@ -54,10 +54,11 @@ const AnnouncementDetails = () => {
   const [announcement, setAnnouncement] = useState(null);
   const [error, setError] = useState(null);
   const [toasts, setToasts] = useState([]);
-  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState({state: false, message: ""});
 
   useEffect(() => {
-    console.log(location.state);
+    if (!id) return setLoading(false);
+    let ignore = false;
     const preloaded = location?.state?.announcement;
     if (preloaded && String(preloaded.id) === String(id)) {
       setAnnouncement(preloaded);
@@ -70,70 +71,45 @@ const AnnouncementDetails = () => {
       setLoading(true);
       setError(null);
 
-      const query = `
-        query {
-          announcements(where: { id: "${id}" }) {
-            id
-            client
-            budget
-            deadline
-            createdAt
-            dataHash
-            status
-          }
-        }
-      `;
-
       try {
         const res = await fetch(
-          "http://localhost:8000/subgraphs/name/freelance-subgraph",
+          `/api/announcement/announcements/details/${id}`,
           {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query }),
+            method: "GET",
+            headers: { 
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
           }
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         if (json.errors)
           throw new Error(json.errors.map((e) => e.message).join(", "));
-        const data = json.data?.announcements?.[0];
+        const data = json;
         if (!data) throw new Error("Annuncio non trovato");
 
-        let meta = {};
-        if (data.dataHash) {
-          try {
-            let ipfsRes = await fetch(
-                                `https://gateway.pinata.cloud/ipfs/${a.dataHash}`
-                            );
-                            if(ipfsRes.status === 429) {
-                                ipfsRes = await fetch(
-                                `https://dweb.link/ipfs/${a.dataHash}`
-                            );
-                            }
-            if (ipfsRes.ok) meta = await ipfsRes.json();
-          } catch (e) {
-            console.warn("IPFS read failed", e);
-          }
-        }
+        if (ignore) return;
+
+        const announcementData = data.announcement;
 
         setAnnouncement({
-          id: data.id,
-          client: meta.clientName || data.client || "—",
-          title: meta.title || `Annuncio #${data.id}`,
-          description: meta.description || "",
-          skills: meta.skills || [],
-          requirements: meta.requirements || [],
-          budget:
-            data.budget != null
-              ? String(data.budget).includes(".")
-                ? data.budget
-                : ethers.utils.formatEther(data.budget)
-              : "—",
-          deadline: data.deadline || null,
-          publishedAt: data.createdAt || null,
-          status: data.status || "Aperto",
-        });
+                  id: announcementData.id,
+                  title: announcementData.title || `Annuncio #${announcementData.id}`,
+                  summary: announcementData.summary || "",
+                  skills: announcementData.skills || [],
+                  requirements: announcementData.requirements || [],
+                  budget:
+                    announcementData.budget != null
+                      ? String(announcementData.budget).includes(".")
+                        ? announcementData.budget
+                        : ethers.utils.formatEther(announcementData.budget)
+                      : "—",
+                  deadline: announcementData.deadline || null,
+                  createdAt: announcementData.createdAt || null,
+                  freelancer: announcementData.freelancer,
+                  status: announcementData.status || "Open",
+                });
       } catch (err) {
         console.error("fetch announcement error", err);
         setError(err.message || String(err));
@@ -146,12 +122,13 @@ const AnnouncementDetails = () => {
   }, [id]);
 
   const candidateClick = async (announcmentId) => {
-    setIsActionLoading(true);
+    setIsActionLoading({state: true, message: "Invio della candidatura in corso"});
     try {
       const result = await fetch("/api/announcement/add-candidate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
         body: JSON.stringify({
           announcement: announcmentId,
@@ -166,17 +143,18 @@ const AnnouncementDetails = () => {
     } catch (err) {
       console.error("Errore durante la candidatura:", err);
     } finally {
-      setIsActionLoading(false);
+      setIsActionLoading({...isActionLoading,state: false});
     }
   };
 
   const removeCandidateClick = async (announcmentId) => {
-    setIsActionLoading(true);
+    setIsActionLoading({state: true, message: "Rimozione della candidatura in corso"});
     try {
       const result = await fetch("/api/announcement/delete-candidate", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
         body: JSON.stringify({
           announcement: announcmentId,
@@ -191,7 +169,7 @@ const AnnouncementDetails = () => {
     } catch (err) {
       console.error("Errore durante la candidatura:", err);
     } finally {
-      setIsActionLoading(false);
+      setIsActionLoading({...isActionLoading,state: false});
     }
   };
 
@@ -205,7 +183,14 @@ const AnnouncementDetails = () => {
   };
 
   if (loading)
-    return <div className="announce-details-page">Caricamento...</div>;
+    return(
+        <div className="loading-overlay">
+          <div className="loading-box">
+            <div className="spinner"></div>
+            <div className="loading-text">Caricamento</div>
+          </div>
+        </div>
+    );
   if (error)
     return <div className="announce-details-page">Errore: {error}</div>;
   if (!announcement)
@@ -320,11 +305,11 @@ const AnnouncementDetails = () => {
         ))}
       </div>
 
-      {isActionLoading && (
+      {isActionLoading.state && (
         <div className="loading-overlay">
           <div className="loading-box">
             <div className="spinner"></div>
-            <div className="loading-text">Operazione in corso...</div>
+            <div className="loading-text">{isActionLoading.message}</div>
           </div>
         </div>
       )}
