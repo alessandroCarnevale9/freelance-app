@@ -86,24 +86,24 @@ const userSchema = new mongoose.Schema({
   },
 
   // Statistiche
-  publishedJobs: {
-    type: Number,
-    default: 0,
-  },
-  completedJobs: {
-    type: Number,
-    default: 0,
-  },
-  totalEarnings: {
-    type: Number,
-    default: 0,
-  },
-  totalSpent: {
-    type: Number,
-    default: 0,
-  },
-}, {
-  timestamps: true,
+  //   publishedJobs: {
+  //     type: Number,
+  //     default: 0,
+  //   },
+  //   completedJobs: {
+  //     type: Number,
+  //     default: 0,
+  //   },
+  //   totalEarnings: {
+  //     type: Number,
+  //     default: 0,
+  //   },
+  //   totalSpent: {
+  //     type: Number,
+  //     default: 0,
+  //   },
+  // }, {
+  //   timestamps: true,
 });
 
 // Indici aggiuntivi (solo questi, address è già coperto da unique)
@@ -119,7 +119,7 @@ userSchema.methods.getPublicProfile = function() {
     email: this.email,
     phone: this.phone,
     titles: this.titles,
-    skills: this.keySkills, // Manteniamo 'skills' per compatibilità frontend
+    skills: this.keySkills,
     projects: this.projects,
     github: this.github,
     portfolio: this.portfolio,

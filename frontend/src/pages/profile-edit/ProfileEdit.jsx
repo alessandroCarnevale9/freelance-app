@@ -15,6 +15,8 @@ const ProfileEdit = () => {
         skills: [],
         github: '',
         portfolio: '',
+        discord: '',
+        slack: '',
         projects: []
     });
 
@@ -28,6 +30,8 @@ const ProfileEdit = () => {
         phone: '',
         github: '',
         portfolio: '',
+        discord: '',
+        slack: '',
         skills: '',
         projects: {}
     });
@@ -66,6 +70,19 @@ const ProfileEdit = () => {
         }
     };
 
+    // Validazione Discord/Slack (username o URL)
+    const validateDiscordSlack = (value) => {
+        if (!value) return '';
+        // Accetta sia username (@username o username) che URL
+        if (value.startsWith('http://') || value.startsWith('https://')) {
+            return validateURL(value);
+        }
+        // Altrimenti è un username, accettiamo qualsiasi formato
+        if (value.trim().length < 2) return 'Deve avere almeno 2 caratteri';
+        if (value.trim().length > 100) return 'Non può superare 100 caratteri';
+        return '';
+    };
+
     // Validazione nickname
     const validateNickname = (nickname) => {
         if (!nickname || !nickname.trim()) return 'Il nickname è obbligatorio';
@@ -93,6 +110,8 @@ const ProfileEdit = () => {
                         skills: data.skills || [],
                         github: data.github || '',
                         portfolio: data.portfolio || '',
+                        discord: data.discord || '',
+                        slack: data.slack || '',
                         projects: data.projects || []
                     });
                 }
@@ -131,6 +150,10 @@ const ProfileEdit = () => {
             case 'github':
             case 'portfolio':
                 error = validateURL(value);
+                break;
+            case 'discord':
+            case 'slack':
+                error = validateDiscordSlack(value);
                 break;
             default:
                 break;
@@ -246,6 +269,8 @@ const ProfileEdit = () => {
             phone: validatePhone(formData.phone),
             github: validateURL(formData.github),
             portfolio: validateURL(formData.portfolio),
+            discord: validateDiscordSlack(formData.discord),
+            slack: validateDiscordSlack(formData.slack),
             skills: '',
             projects: {}
         };
@@ -386,22 +411,25 @@ const ProfileEdit = () => {
                             )}
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="phone">Telefono</label>
-                            <input
-                                type="tel"
-                                id="phone"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleInputChange}
-                                className={errors.phone ? 'input-error' : ''}
-                                placeholder="+39 123 456 7890"
-                                disabled={saving}
-                            />
-                            {errors.phone && (
-                                <span className="error-message">{errors.phone}</span>
-                            )}
-                        </div>
+                        {/* Mostra il telefono solo se NON è un freelancer */}
+                        {user.role !== 'FREELANCER' && (
+                            <div className="form-group">
+                                <label htmlFor="phone">Telefono</label>
+                                <input
+                                    type="tel"
+                                    id="phone"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleInputChange}
+                                    className={errors.phone ? 'input-error' : ''}
+                                    placeholder="+39 123 456 7890"
+                                    disabled={saving}
+                                />
+                                {errors.phone && (
+                                    <span className="error-message">{errors.phone}</span>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Sezione Freelancer */}
@@ -494,6 +522,40 @@ const ProfileEdit = () => {
                                     />
                                     {errors.portfolio && (
                                         <span className="error-message">{errors.portfolio}</span>
+                                    )}
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="discord">Discord</label>
+                                    <input
+                                        type="text"
+                                        id="discord"
+                                        name="discord"
+                                        placeholder="@username o https://discord.com/users/..."
+                                        value={formData.discord}
+                                        onChange={handleInputChange}
+                                        className={errors.discord ? 'input-error' : ''}
+                                        disabled={saving}
+                                    />
+                                    {errors.discord && (
+                                        <span className="error-message">{errors.discord}</span>
+                                    )}
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="slack">Slack</label>
+                                    <input
+                                        type="text"
+                                        id="slack"
+                                        name="slack"
+                                        placeholder="@username o link workspace"
+                                        value={formData.slack}
+                                        onChange={handleInputChange}
+                                        className={errors.slack ? 'input-error' : ''}
+                                        disabled={saving}
+                                    />
+                                    {errors.slack && (
+                                        <span className="error-message">{errors.slack}</span>
                                     )}
                                 </div>
                             </div>

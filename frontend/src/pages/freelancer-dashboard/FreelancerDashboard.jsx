@@ -126,44 +126,6 @@ const FreelancerDashboard = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Statistiche rapide */}
-                <div className="stats-section">
-                    <h2>Le Tue Statistiche</h2>
-                    <div className="stats-grid">
-                        <div className="stat-item">
-                            <span className="stat-value">0</span>
-                            <span className="stat-label">Candidature Inviate</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-value">0</span>
-                            <span className="stat-label">Lavori Attivi</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-value">0</span>
-                            <span className="stat-label">Progetti Completati</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-value">0 ETH</span>
-                            <span className="stat-label">Guadagni Totali</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Suggerimento completamento profilo */}
-                <div className="profile-completeness">
-                    <h3>Completa il tuo profilo</h3>
-                    <p>Un profilo completo aumenta le tue possibilità di essere scelto</p>
-                    <div className="completeness-bar">
-                        <div className="completeness-fill" style={{ width: '60%' }}></div>
-                    </div>
-                    <button
-                        className="complete-profile-btn"
-                        onClick={() => navigate(`/profile/edit`)}
-                    >
-                        Completa Profilo
-                    </button>
-                </div>
             </div>
         </div>
     );

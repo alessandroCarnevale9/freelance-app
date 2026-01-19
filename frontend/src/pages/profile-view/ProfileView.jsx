@@ -4,8 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../hooks/useAuthContext';
 
 const ProfileView = () => {
-    const { address } = useParams(); // Address del profilo da visualizzare
-    const { user } = useAuthContext(); // Utente loggato
+    const { address } = useParams();
+    const { user } = useAuthContext();
     const navigate = useNavigate();
 
     const [profile, setProfile] = useState(null);
@@ -118,6 +118,25 @@ const ProfileView = () => {
 const FreelancerProfileContent = ({ profile }) => {
     return (
         <>
+            {/* Informazioni Base */}
+            <div className="profile-section">
+                <h2>Informazioni Base</h2>
+                <div className="info-grid">
+                    <div className="info-item">
+                        <span className="info-label">Nickname:</span>
+                        <span className="info-value">{profile.nickname}</span>
+                    </div>
+                    {profile.email && (
+                        <div className="info-item">
+                            <span className="info-label">Email:</span>
+                            <span className="info-value">
+                                <a href={`mailto:${profile.email}`}>{profile.email}</a>
+                            </span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
             {/* Skills */}
             {profile.skills && profile.skills.length > 0 && (
                 <div className="profile-section">
@@ -132,10 +151,81 @@ const FreelancerProfileContent = ({ profile }) => {
                 </div>
             )}
 
+            {/* Link esterni */}
+            {(profile.github || profile.portfolio || profile.discord || profile.slack) && (
+                <div className="profile-section">
+                    <h2>Link</h2>
+                    <div className="links-container">
+                        {profile.github && (
+                            <div className="link-item">
+                                <span className="link-label">GitHub:</span>
+                                <a
+                                    href={profile.github}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="link-value"
+                                >
+                                    {profile.github}
+                                </a>
+                            </div>
+                        )}
+                        {profile.portfolio && (
+                            <div className="link-item">
+                                <span className="link-label">Portfolio:</span>
+                                <a
+                                    href={profile.portfolio}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="link-value"
+                                >
+                                    {profile.portfolio}
+                                </a>
+                            </div>
+                        )}
+                        {profile.discord && (
+                            <div className="link-item">
+                                <span className="link-label">Discord:</span>
+                                <span className="link-value">
+                                    {profile.discord.startsWith('http') ? (
+                                        <a
+                                            href={profile.discord}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {profile.discord}
+                                        </a>
+                                    ) : (
+                                        profile.discord
+                                    )}
+                                </span>
+                            </div>
+                        )}
+                        {profile.slack && (
+                            <div className="link-item">
+                                <span className="link-label">Slack:</span>
+                                <span className="link-value">
+                                    {profile.slack.startsWith('http') ? (
+                                        <a
+                                            href={profile.slack}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {profile.slack}
+                                        </a>
+                                    ) : (
+                                        profile.slack
+                                    )}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {/* Progetti Portfolio */}
             {profile.projects && profile.projects.length > 0 && (
                 <div className="profile-section">
-                    <h2>Portfolio</h2>
+                    <h2>Progetti Portfolio</h2>
                     <div className="projects-grid">
                         {profile.projects.map((project, index) => (
                             <div key={index} className="project-card">
@@ -151,50 +241,30 @@ const FreelancerProfileContent = ({ profile }) => {
                                         ))}
                                     </div>
                                 )}
-                                <h3>{project.title}</h3>
-                                <p>{project.description}</p>
+                                <div className="project-content">
+                                    <h3 className="project-title">{project.title}</h3>
+                                    <p className="project-description">{project.description}</p>
+                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
             )}
 
-            {/* Contatti e Link (visibili solo se sono presenti) */}
-            {(profile.email || profile.phone || profile.github || profile.portfolio) && (
-                <div className="profile-section">
-                    <h2>Contatti</h2>
-                    <div className="contacts-container">
-                        {profile.email && (
-                            <div className="contact-item">
-                                <span className="contact-label">Email:</span>
-                                <a href={`mailto:${profile.email}`}>{profile.email}</a>
-                            </div>
-                        )}
-                        {profile.phone && (
-                            <div className="contact-item">
-                                <span className="contact-label">Telefono:</span>
-                                <a href={`tel:${profile.phone}`}>{profile.phone}</a>
-                            </div>
-                        )}
-                        {profile.github && (
-                            <div className="contact-item">
-                                <span className="contact-label">GitHub:</span>
-                                <a href={profile.github} target="_blank" rel="noopener noreferrer">
-                                    {profile.github}
-                                </a>
-                            </div>
-                        )}
-                        {profile.portfolio && (
-                            <div className="contact-item">
-                                <span className="contact-label">Portfolio:</span>
-                                <a href={profile.portfolio} target="_blank" rel="noopener noreferrer">
-                                    {profile.portfolio}
-                                </a>
-                            </div>
-                        )}
+            {/* Messaggio se il profilo è vuoto */}
+            {!profile.email &&
+                (!profile.skills || profile.skills.length === 0) &&
+                !profile.github &&
+                !profile.portfolio &&
+                !profile.discord &&
+                !profile.slack &&
+                (!profile.projects || profile.projects.length === 0) && (
+                    <div className="profile-section">
+                        <div className="empty-profile-message">
+                            <p>Il profilo non è ancora stato completato.</p>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
         </>
     );
 };
@@ -203,38 +273,38 @@ const FreelancerProfileContent = ({ profile }) => {
 const ClientProfileContent = ({ profile }) => {
     return (
         <>
-            {/* Statistiche base cliente */}
+            {/* Informazioni Base */}
             <div className="profile-section">
-                <h2>Informazioni</h2>
-                <div className="client-stats">
-                    <div className="stat-item">
-                        <span className="stat-label">Progetti pubblicati</span>
-                        <span className="stat-value">{profile.publishedJobs || 0}</span>
+                <h2>Informazioni Base</h2>
+                <div className="info-grid">
+                    <div className="info-item">
+                        <span className="info-label">Nickname:</span>
+                        <span className="info-value">{profile.nickname}</span>
                     </div>
-                    <div className="stat-item">
-                        <span className="stat-label">Progetti completati</span>
-                        <span className="stat-value">{profile.completedJobs || 0}</span>
-                    </div>
+                    {profile.email && (
+                        <div className="info-item">
+                            <span className="info-label">Email:</span>
+                            <span className="info-value">
+                                <a href={`mailto:${profile.email}`}>{profile.email}</a>
+                            </span>
+                        </div>
+                    )}
+                    {profile.phone && (
+                        <div className="info-item">
+                            <span className="info-label">Telefono:</span>
+                            <span className="info-value">
+                                <a href={`tel:${profile.phone}`}>{profile.phone}</a>
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Contatti */}
-            {(profile.email || profile.phone) && (
+            {/* Messaggio se il profilo è vuoto */}
+            {!profile.email && !profile.phone && (
                 <div className="profile-section">
-                    <h2>Contatti</h2>
-                    <div className="contacts-container">
-                        {profile.email && (
-                            <div className="contact-item">
-                                <span className="contact-label">Email:</span>
-                                <a href={`mailto:${profile.email}`}>{profile.email}</a>
-                            </div>
-                        )}
-                        {profile.phone && (
-                            <div className="contact-item">
-                                <span className="contact-label">Telefono:</span>
-                                <a href={`tel:${profile.phone}`}>{profile.phone}</a>
-                            </div>
-                        )}
+                    <div className="empty-profile-message">
+                        <p>Il profilo non è ancora stato completato.</p>
                     </div>
                 </div>
             )}

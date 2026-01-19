@@ -121,29 +121,6 @@ const ClientDashboard = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Statistiche rapide */}
-                <div className="stats-section">
-                    <h2>Statistiche</h2>
-                    <div className="stats-grid">
-                        <div className="stat-item">
-                            <span className="stat-value">0</span>
-                            <span className="stat-label">Annunci Pubblicati</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-value">0</span>
-                            <span className="stat-label">Freelancer Assunti</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-value">0</span>
-                            <span className="stat-label">Progetti Completati</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-value">0 ETH</span>
-                            <span className="stat-label">Budget Totale Speso</span>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     );
