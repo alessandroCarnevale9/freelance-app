@@ -12,6 +12,7 @@ const ProfileView = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Verifica se è il proprio profilo
     const isOwnProfile = !address || (user && address?.toLowerCase() === user.address?.toLowerCase());
 
     useEffect(() => {
@@ -25,9 +26,10 @@ const ProfileView = () => {
                     return;
                 }
 
+                const token = localStorage.getItem('accessToken');
                 const response = await fetch(`/api/users/profile/${targetAddress}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        'Authorization': token ? `Bearer ${token}` : ''
                     }
                 });
 
@@ -70,9 +72,7 @@ const ProfileView = () => {
         );
     }
 
-    if (!profile) {
-        return null;
-    }
+    if (!profile) return null;
 
     return (
         <div className="profile-view">
@@ -87,7 +87,7 @@ const ProfileView = () => {
                         <h1>{profile.nickname}</h1>
                         <p className="profile-role">{profile.role}</p>
                         <p className="profile-address">
-                            {profile.address.slice(0, 6)}...{profile.address.slice(-4)}
+                            {profile.address?.slice(0, 6)}...{profile.address?.slice(-4)}
                         </p>
                     </div>
 
@@ -102,11 +102,9 @@ const ProfileView = () => {
                 </div>
 
                 {/* Contenuto specifico per ruolo */}
-                {profile.role === 'FREELANCER' && (
+                {profile.role === 'FREELANCER' ? (
                     <FreelancerProfileContent profile={profile} />
-                )}
-
-                {profile.role === 'CLIENT' && (
+                ) : (
                     <ClientProfileContent profile={profile} />
                 )}
             </div>
@@ -114,11 +112,18 @@ const ProfileView = () => {
     );
 };
 
-// Componente per il contenuto del profilo Freelancer
 const FreelancerProfileContent = ({ profile }) => {
     return (
         <>
-            {/* Informazioni Base */}
+            {profile.description && (
+                <div className="profile-section">
+                    <h2>Chi sono</h2>
+                    <div className="description-content">
+                        <p>{profile.description}</p>
+                    </div>
+                </div>
+            )}
+
             <div className="profile-section">
                 <h2>Informazioni Base</h2>
                 <div className="info-grid">
@@ -137,21 +142,18 @@ const FreelancerProfileContent = ({ profile }) => {
                 </div>
             </div>
 
-            {/* Skills */}
             {profile.skills && profile.skills.length > 0 && (
                 <div className="profile-section">
                     <h2>Competenze</h2>
                     <div className="skills-container">
                         {profile.skills.map((skill, index) => (
-                            <span key={index} className="skill-tag">
-                                {skill}
-                            </span>
+                            <span key={index} className="skill-tag">{skill}</span>
                         ))}
                     </div>
                 </div>
             )}
 
-            {/* Link esterni */}
+            {/* Link esterni - Corretti tag <a> */}
             {(profile.github || profile.portfolio || profile.discord || profile.slack) && (
                 <div className="profile-section">
                     <h2>Link</h2>
@@ -159,12 +161,7 @@ const FreelancerProfileContent = ({ profile }) => {
                         {profile.github && (
                             <div className="link-item">
                                 <span className="link-label">GitHub:</span>
-                                <a
-                                    href={profile.github}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="link-value"
-                                >
+                                <a href={profile.github} target="_blank" rel="noopener noreferrer" className="link-value">
                                     {profile.github}
                                 </a>
                             </div>
@@ -172,12 +169,7 @@ const FreelancerProfileContent = ({ profile }) => {
                         {profile.portfolio && (
                             <div className="link-item">
                                 <span className="link-label">Portfolio:</span>
-                                <a
-                                    href={profile.portfolio}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="link-value"
-                                >
+                                <a href={profile.portfolio} target="_blank" rel="noopener noreferrer" className="link-value">
                                     {profile.portfolio}
                                 </a>
                             </div>
@@ -187,16 +179,10 @@ const FreelancerProfileContent = ({ profile }) => {
                                 <span className="link-label">Discord:</span>
                                 <span className="link-value">
                                     {profile.discord.startsWith('http') ? (
-                                        <a
-                                            href={profile.discord}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
+                                        <a href={profile.discord} target="_blank" rel="noopener noreferrer">
                                             {profile.discord}
                                         </a>
-                                    ) : (
-                                        profile.discord
-                                    )}
+                                    ) : profile.discord}
                                 </span>
                             </div>
                         )}
@@ -205,16 +191,10 @@ const FreelancerProfileContent = ({ profile }) => {
                                 <span className="link-label">Slack:</span>
                                 <span className="link-value">
                                     {profile.slack.startsWith('http') ? (
-                                        <a
-                                            href={profile.slack}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
+                                        <a href={profile.slack} target="_blank" rel="noopener noreferrer">
                                             {profile.slack}
                                         </a>
-                                    ) : (
-                                        profile.slack
-                                    )}
+                                    ) : profile.slack}
                                 </span>
                             </div>
                         )}
@@ -222,7 +202,6 @@ const FreelancerProfileContent = ({ profile }) => {
                 </div>
             )}
 
-            {/* Progetti Portfolio */}
             {profile.projects && profile.projects.length > 0 && (
                 <div className="profile-section">
                     <h2>Progetti Portfolio</h2>
@@ -250,65 +229,17 @@ const FreelancerProfileContent = ({ profile }) => {
                     </div>
                 </div>
             )}
-
-            {/* Messaggio se il profilo è vuoto */}
-            {!profile.email &&
-                (!profile.skills || profile.skills.length === 0) &&
-                !profile.github &&
-                !profile.portfolio &&
-                !profile.discord &&
-                !profile.slack &&
-                (!profile.projects || profile.projects.length === 0) && (
-                    <div className="profile-section">
-                        <div className="empty-profile-message">
-                            <p>Il profilo non è ancora stato completato.</p>
-                        </div>
-                    </div>
-                )}
         </>
     );
 };
 
-// Componente per il contenuto del profilo Cliente
 const ClientProfileContent = ({ profile }) => {
     return (
-        <>
-            {/* Informazioni Base */}
-            <div className="profile-section">
-                <h2>Informazioni Base</h2>
-                <div className="info-grid">
-                    <div className="info-item">
-                        <span className="info-label">Nickname:</span>
-                        <span className="info-value">{profile.nickname}</span>
-                    </div>
-                    {profile.email && (
-                        <div className="info-item">
-                            <span className="info-label">Email:</span>
-                            <span className="info-value">
-                                <a href={`mailto:${profile.email}`}>{profile.email}</a>
-                            </span>
-                        </div>
-                    )}
-                    {profile.phone && (
-                        <div className="info-item">
-                            <span className="info-label">Telefono:</span>
-                            <span className="info-value">
-                                <a href={`tel:${profile.phone}`}>{profile.phone}</a>
-                            </span>
-                        </div>
-                    )}
-                </div>
+        <div className="profile-section">
+            <div className="empty-profile-message">
+                <p>Profilo Cliente di <strong>{profile.nickname}</strong></p>
             </div>
-
-            {/* Messaggio se il profilo è vuoto */}
-            {!profile.email && !profile.phone && (
-                <div className="profile-section">
-                    <div className="empty-profile-message">
-                        <p>Il profilo non è ancora stato completato.</p>
-                    </div>
-                </div>
-            )}
-        </>
+        </div>
     );
 };
 
