@@ -20,7 +20,7 @@ const metamaskLogin = async (req, res) => {
   const { address, nickname, signedMessage, nonce } = req.body;
 
   // Validazione campi richiesti
-  if (!address || /*!nickname ||*/ !signedMessage || !nonce) {
+  if (!address || !signedMessage || !nonce) {
     throw new ApiError(400, "Tutti i campi sono obbligatori");
   }
 
@@ -54,11 +54,6 @@ const metamaskLogin = async (req, res) => {
     throw new ApiError(401, "Account disattivato");
   }
 
-  // Verifica nickname
-  // if (foundUser.nickname !== nickname) {
-  //   throw new ApiError(401, "Nickname non corrispondente");
-  // }
-
   // Genera tokens
   const payload = {
     UserInfo: {
@@ -81,34 +76,6 @@ const metamaskLogin = async (req, res) => {
   res.status(200).json({ user, accessToken });
 };
 
-// const login = async (req, res) => {
-//   const { email, password } = req.body;
-
-//   if (!email || !password) throw new ApiError(404, "All fields are required");
-
-//   const foundUser = await User.findOne({ email }).exec();
-
-//   if (!foundUser || !foundUser.isActive)
-//     throw new ApiError(401, "Unauthorized");
-
-//   const match = await bcrypt.compare(password, foundUser.password);
-//   if (!match) throw new ApiError(401, "Unauthorized");
-
-//   const payload = {
-//     UserInfo: {
-//       id: foundUser._id.toString(),
-//       email: foundUser.email,
-//       role: foundUser.role,
-//     },
-//   };
-
-//   const accessToken = generateAccessToken(payload);
-//   const refreshToken = generateRefreshToken(payload);
-//   attachRefreshTokenCookie(res, refreshToken);
-
-//   res.status(201).json({ accessToken });
-// };
-
 const refresh = async (req, res) => {
   const token = req.cookies?.jwt;
   if (!token) throw new ApiError(401, "Unauthorized");
@@ -130,7 +97,7 @@ const refresh = async (req, res) => {
   const payload = {
     UserInfo: {
       id: foundUser._id.toString(),
-      address: foundUser.address,  // Corretto: usa address invece di email
+      address: foundUser.address,
       role: foundUser.role,
     },
   };
@@ -250,10 +217,15 @@ const freelancerSignup = (bucket) => {
     const {
       address,
       nickname,
-      title,
+      description,
+      email,
       role,
       signedMessage,
       skills,
+      github,
+      portfolio,
+      discord,
+      slack,
       projects,
       nonce,
     } = formData;
@@ -265,12 +237,6 @@ const freelancerSignup = (bucket) => {
     }
 
     const files = req.files;
-
-    if (!title) {
-      return res.status(400).json({
-        error: "Titolo mancante",
-      });
-    }
 
     if (!address) {
       return res.status(400).json({
@@ -329,53 +295,49 @@ const freelancerSignup = (bucket) => {
 
       const processedProjects = [];
 
-      for (const [index, project] of projects.entries()) {
-        const projectFiles = files.filter(
-          (f) => f.fieldname === `${recoveredAddress}_project_${index}`
-        );
-
-        let imageIds = [];
-        if (projectFiles.length > 0) {
-          imageIds = await uploadFile(
-            bucket,
-            projectFiles,
-            `${recoveredAddress}_project_${index}`
+      if (projects && projects.length > 0) {
+        for (const [index, project] of projects.entries()) {
+          const projectFiles = files.filter(
+            (f) => f.fieldname === `${recoveredAddress}_project_${index}`
           );
 
-          imageIds = imageIds.map((img) => img.id);
-          uploadedFileIds.push(...imageIds);
-        }
+          let imageIds = [];
+          if (projectFiles.length > 0) {
+            imageIds = await uploadFile(
+              bucket,
+              projectFiles,
+              `${recoveredAddress}_project_${index}`
+            );
 
-        processedProjects.push({
-          title: project.title,
-          description: project.description,
-          imageIds: imageIds,
-        });
+            imageIds = imageIds.map((img) => img.id);
+            uploadedFileIds.push(...imageIds);
+          }
+
+          processedProjects.push({
+            title: project.title,
+            description: project.description,
+            imageIds: imageIds,
+          });
+        }
       }
 
-      const newUserCreation =
-        processedProjects.length !== 0
-          ? async () => {
-            return await User.create({
-              address: recoveredAddress.toLowerCase().trim(),
-              nickname,
-              role,
-              keySkills: skills,
-              projects: processedProjects,
-              isActive: true,
-            });
-          }
-          : async () => {
-            return await User.create({
-              address: recoveredAddress.toLowerCase().trim(),
-              nickname,
-              role,
-              keySkills: skills,
-              isActive: true,
-            });
-          };
+      const userData = {
+        address: recoveredAddress.toLowerCase().trim(),
+        nickname,
+        role,
+        skills: skills,
+        isActive: true,
+      };
 
-      const newUser = await newUserCreation();
+      if (description) userData.description = description;
+      if (email) userData.email = email;
+      if (github) userData.github = github;
+      if (portfolio) userData.portfolio = portfolio;
+      if (discord) userData.discord = discord;
+      if (slack) userData.slack = slack;
+      if (processedProjects.length > 0) userData.projects = processedProjects;
+
+      const newUser = await User.create(userData);
 
       console.log("newUser:", newUser);
 
@@ -412,7 +374,6 @@ const freelancerSignup = (bucket) => {
 };
 
 module.exports = {
-  // login,
   metamaskLogin,
   refresh,
   logout,

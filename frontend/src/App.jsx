@@ -1,20 +1,20 @@
-import './App.css';
+import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuthContext } from './hooks/useAuthContext';
-import HomePage from './pages/home/HomePage';
-import RegistrationPage from './pages/registration/RegistrationPage';
-import FreelancerDashboard from './pages/freelancer-dashboard/FreelancerDashboard';
-import Dashboard from './pages/dashboard/DashboardPage';
-import ClientDashboard from './pages/client-dashboard/ClientDashboard';
-import ProfileView from './pages/profile-view/ProfileView';
-import ProfileEdit from './pages/profile-edit/ProfileEdit';
-import NavBar from './components/nav/NavBar';
-import AnnouncementCreationPage from './pages/announcementCreation/AnnouncementCreationPage';
-import AnnouncementListPage from './pages/announcementsList/AnnouncementListPage';
-import AnnouncementDetailsPage from './pages/announcementDetails/AnnouncementDetailsPage';
-import AnnouncementReviewPage from './pages/announcementReviewClient/AnnouncementReviewPage';
-import AnnouncementReviewFreelancerPage from './pages/announcementReviewFreelancer/AnnouncementReviewFreelancerPage';
-import AnnouncementEditPage from './pages/announcementEdit/AnnouncementEditPage';
+import { useAuthContext } from "./hooks/useAuthContext";
+import HomePage from "./pages/home/HomePage";
+import RegistrationPage from "./pages/registration/RegistrationPage";
+import FreelancerDashboard from "./pages/freelancer-dashboard/FreelancerDashboard";
+import Dashboard from "./pages/dashboard/DashboardPage";
+import ClientDashboard from "./pages/client-dashboard/ClientDashboard";
+import ProfileView from "./pages/profile-view/ProfileView";
+import ProfileEdit from "./pages/profile-edit/ProfileEdit";
+import NavBar from "./components/nav/NavBar";
+import AnnouncementCreationPage from "./pages/announcementCreation/AnnouncementCreationPage";
+import AnnouncementListPage from "./pages/announcementsList/AnnouncementListPage";
+import AnnouncementDetailsPage from "./pages/announcementDetails/AnnouncementDetailsPage";
+import AnnouncementReviewPage from "./pages/announcementReviewClient/AnnouncementReviewPage";
+import AnnouncementReviewFreelancerPage from "./pages/announcementReviewFreelancer/AnnouncementReviewFreelancerPage";
+import AnnouncementEditPage from "./pages/announcementEdit/AnnouncementEditPage";
 
 // Componente per proteggere le route che richiedono autenticazione
 const ProtectedRoute = ({ children, role }) => {
@@ -24,10 +24,14 @@ const ProtectedRoute = ({ children, role }) => {
     return <Navigate to="/" replace />;
   }
 
-  if(role == user.role) {
-    return children
+  if (role) {
+    if (role == user.role) {
+      return children;
+    } else {
+      return <Navigate to="/" replace />;
+    }
   } else {
-    return <Navigate to="/" replace />;
+    return children;
   }
 };
 
@@ -37,9 +41,9 @@ const PublicRoute = ({ children }) => {
 
   if (user) {
     // Reindirizza alla dashboard appropriata in base al ruolo
-    if (user.role === 'FREELANCER') {
+    if (user.role === "FREELANCER") {
       return <Navigate to="/freelancer-dashboard" replace />;
-    } else if (user.role === 'CLIENT') {
+    } else if (user.role === "CLIENT") {
       return <Navigate to="/client-dashboard" replace />;
     }
   }
@@ -55,11 +59,11 @@ const DashboardRedirect = () => {
     return <Navigate to="/" replace />;
   }
 
-  console.log('DashboardRedirect - User data:', user);
+  console.log("DashboardRedirect - User data:", user);
 
-  if (user.role === 'FREELANCER') {
+  if (user.role === "FREELANCER") {
     return <Navigate to="/freelancer-dashboard" replace />;
-  } else if (user.role === 'CLIENT') {
+  } else if (user.role === "CLIENT") {
     return <Navigate to="/client-dashboard" replace />;
   }
 
@@ -83,10 +87,7 @@ function App() {
               }
             />
 
-            <Route
-              path="/registration"
-              element={<RegistrationPage />}
-            />
+            <Route path="/registration" element={<RegistrationPage />} />
 
             {/* Route protette - richiedono autenticazione */}
             <Route
@@ -128,7 +129,7 @@ function App() {
 
             <Route
               path="/announcements-list"
-              element = {
+              element={
                 <ProtectedRoute role="FREELANCER">
                   <AnnouncementListPage />
                 </ProtectedRoute>
@@ -137,7 +138,7 @@ function App() {
 
             <Route
               path="/announcements-list/:id"
-              element = {
+              element={
                 <ProtectedRoute role="FREELANCER">
                   <AnnouncementDetailsPage />
                 </ProtectedRoute>
@@ -154,7 +155,7 @@ function App() {
             />
 
             <Route
-              path='/freelancer-dashboard/announcement/:id'
+              path="/freelancer-dashboard/announcement/:id"
               element={
                 <ProtectedRoute role="FREELANCER">
                   <AnnouncementReviewFreelancerPage />
@@ -182,16 +183,10 @@ function App() {
             />
 
             {/* Route generica dashboard - reindirizza a quella corretta */}
-            <Route
-              path="/dashboard"
-              element={<DashboardRedirect />}
-            />
+            <Route path="/dashboard" element={<DashboardRedirect />} />
 
             {/* Catch-all route - reindirizza alla home */}
-            <Route
-              path="*"
-              element={<Navigate to="/" replace />}
-            />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </div>

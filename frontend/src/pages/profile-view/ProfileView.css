@@ -1,4 +1,4 @@
-/* --- Variabili Profilo --- */
+/* --- Variabili ProfileView --- */
 :root {
     --bg: #f5f8fb;
     --card: #fff;
@@ -24,7 +24,6 @@
     border-radius: 10px;
     box-shadow: 0 8px 24px rgba(30, 40, 50, 0.04);
     border: 1px solid rgba(10, 30, 50, 0.04);
-    overflow: hidden;
 }
 
 /* --- Header --- */
@@ -35,6 +34,7 @@
     padding: 32px;
     background: linear-gradient(135deg, var(--primary), #e6eef3);
     position: relative;
+    border-radius: 10px 10px 0 0;
 }
 
 .profile-avatar {
@@ -106,19 +106,65 @@
 
 /* --- Sections --- */
 .profile-section {
-    padding: 32px;
+    background: white;
+    padding: 24px;
+    border-radius: 0;
     border-bottom: 1px solid var(--input-border);
+    margin: 0;
 }
 
 .profile-section:last-child {
     border-bottom: none;
+    border-radius: 0 0 10px 10px;
 }
 
 .profile-section h2 {
-    margin: 0 0 20px 0;
+    margin: 0 0 18px 0;
     color: var(--text-dark);
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 700;
+}
+
+/* --- Informazioni Base --- */
+.info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-item {
+    background: #fbfdff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--input-border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--text-medium);
+    min-width: 100px;
+    font-size: 0.9rem;
+}
+
+.info-value {
+    color: var(--text-dark);
+    flex: 1;
+    word-break: break-word;
+    font-size: 0.95rem;
+}
+
+.info-value a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.info-value a:hover {
+    color: #0d7aad;
 }
 
 /* --- Skills --- */
@@ -130,39 +176,65 @@
 
 .skill-tag {
     background: #eef6fb;
-    color: var(--text-medium);
+    color: var(--text-dark);
     padding: 6px 12px;
     border-radius: 999px;
     font-size: 0.9rem;
     font-weight: 500;
     border: 1px solid transparent;
-    transition: all 0.2s ease;
 }
 
-.skill-tag:hover {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
+/* --- Link Esterni --- */
+.links-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.link-item {
+    background: #fbfdff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--input-border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.link-label {
+    font-weight: 600;
+    color: var(--text-medium);
+    min-width: 90px;
+    font-size: 0.9rem;
+}
+
+.link-value {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.2s;
+    flex: 1;
+    word-break: break-all;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.link-value:hover {
+    color: #0d7aad;
 }
 
 /* --- Projects --- */
 .projects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    gap: 16px;
 }
 
 .project-card {
     background: #fbfdff;
     border-radius: 10px;
     overflow: hidden;
-    transition: all 0.2s ease;
     border: 1px solid var(--input-border);
-}
-
-.project-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(30, 40, 50, 0.08);
 }
 
 .project-images {
@@ -178,28 +250,27 @@
     height: 160px;
     object-fit: cover;
     border-radius: 8px;
-    transition: transform 0.2s ease;
 }
 
-.project-image:hover {
-    transform: scale(1.03);
+.project-content {
+    padding: 16px;
 }
 
-.project-card h3 {
-    margin: 16px 16px 10px 16px;
+.project-title {
+    margin: 0 0 10px 0;
     color: var(--text-dark);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
 }
 
-.project-card p {
-    margin: 0 16px 16px 16px;
+.project-description {
+    margin: 0;
     color: var(--muted);
     line-height: 1.5;
     font-size: 0.9rem;
 }
 
-/* --- Contacts --- */
+/* --- Contacts (legacy - mantenuto per compatibilità) --- */
 .contacts-container {
     display: flex;
     flex-direction: column;
@@ -214,16 +285,10 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    transition: all 0.2s ease;
-}
-
-.contact-item:hover {
-    background: #eef6fb;
-    border-color: var(--primary);
 }
 
 .contact-label {
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-medium);
     min-width: 90px;
     font-size: 0.9rem;
@@ -239,39 +304,24 @@
     font-size: 0.9rem;
 }
 
-.contact-item:hover a {
+.contact-item a:hover {
     color: #0d7aad;
 }
 
-/* --- Client Stats --- */
-.client-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-}
-
-.stat-item {
-    background: white;
-    padding: 24px;
-    border-radius: 10px;
-    border: 1px solid var(--input-border);
+/* --- Empty Profile Message --- */
+.empty-profile-message {
     text-align: center;
-    transition: all 0.2s ease;
+    padding: 32px 20px;
+    background: #fbfdff;
+    border-radius: 10px;
+    border: 2px dashed var(--input-border);
 }
 
-.stat-label {
-    display: block;
+.empty-profile-message p {
+    margin: 0;
     color: var(--muted);
-    font-size: 0.85rem;
-    margin-bottom: 8px;
+    font-size: 1rem;
     font-weight: 500;
-}
-
-.stat-value {
-    display: block;
-    font-size: clamp(1.8rem, 4vw, 2.4rem);
-    font-weight: 700;
-    color: var(--primary);
 }
 
 /* --- Loading & Error --- */
@@ -355,25 +405,25 @@
     }
 
     .profile-section {
-        padding: 24px 20px;
+        padding: 20px 16px;
     }
 
     .projects-grid {
         grid-template-columns: 1fr;
     }
 
+    .info-item,
+    .link-item,
     .contact-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 6px;
     }
 
+    .info-label,
+    .link-label,
     .contact-label {
         min-width: auto;
-    }
-
-    .client-stats {
-        grid-template-columns: 1fr;
     }
 }
 
@@ -389,7 +439,7 @@
     }
 
     .profile-section {
-        padding: 20px 16px;
+        padding: 16px 12px;
     }
 
     .skill-tag {
@@ -397,11 +447,17 @@
         font-size: 0.85rem;
     }
 
-    .project-card h3 {
-        font-size: 1rem;
+    .project-title {
+        font-size: 0.95rem;
     }
 
-    .stat-item {
-        padding: 20px;
+    .info-item,
+    .link-item,
+    .contact-item {
+        padding: 10px 12px;
+    }
+
+    .empty-profile-message {
+        padding: 24px 16px;
     }
 }

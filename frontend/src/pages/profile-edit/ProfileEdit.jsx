@@ -10,11 +10,13 @@ const ProfileEdit = () => {
 
     const [formData, setFormData] = useState({
         nickname: '',
+        description: '',
         email: '',
-        phone: '',
         skills: [],
         github: '',
         portfolio: '',
+        discord: '',
+        slack: '',
         projects: []
     });
 
@@ -24,10 +26,12 @@ const ProfileEdit = () => {
     const [toasts, setToasts] = useState([]);
     const [errors, setErrors] = useState({
         nickname: '',
+        description: '',
         email: '',
-        phone: '',
         github: '',
         portfolio: '',
+        discord: '',
+        slack: '',
         skills: '',
         projects: {}
     });
@@ -48,13 +52,6 @@ const ProfileEdit = () => {
         return emailRegex.test(email) ? '' : 'Email non valida';
     };
 
-    // Validazione telefono
-    const validatePhone = (phone) => {
-        if (!phone) return '';
-        const phoneRegex = /^[\d\s+()-]{8,20}$/;
-        return phoneRegex.test(phone) ? '' : 'Numero di telefono non valido';
-    };
-
     // Validazione URL
     const validateURL = (url) => {
         if (!url) return '';
@@ -66,11 +63,30 @@ const ProfileEdit = () => {
         }
     };
 
+    // Validazione Discord/Slack
+    const validateDiscordSlack = (value) => {
+        if (!value) return '';
+        if (value.startsWith('http://') || value.startsWith('https://')) {
+            return validateURL(value);
+        }
+        if (value.trim().length < 2) return 'Deve avere almeno 2 caratteri';
+        if (value.trim().length > 100) return 'Non può superare 100 caratteri';
+        return '';
+    };
+
     // Validazione nickname
     const validateNickname = (nickname) => {
         if (!nickname || !nickname.trim()) return 'Il nickname è obbligatorio';
         if (nickname.trim().length < 2) return 'Il nickname deve avere almeno 2 caratteri';
         if (nickname.trim().length > 50) return 'Il nickname non può superare 50 caratteri';
+        return '';
+    };
+
+    // Validazione descrizione
+    const validateDescription = (description) => {
+        if (!description) return '';
+        if (description.trim().length < 10) return 'La descrizione deve avere almeno 10 caratteri';
+        if (description.trim().length > 500) return 'La descrizione non può superare 500 caratteri';
         return '';
     };
 
@@ -88,11 +104,13 @@ const ProfileEdit = () => {
                     const data = await response.json();
                     setFormData({
                         nickname: data.nickname || '',
+                        description: data.description || '',
                         email: data.email || '',
-                        phone: data.phone || '',
                         skills: data.skills || [],
                         github: data.github || '',
                         portfolio: data.portfolio || '',
+                        discord: data.discord || '',
+                        slack: data.slack || '',
                         projects: data.projects || []
                     });
                 }
@@ -122,15 +140,19 @@ const ProfileEdit = () => {
             case 'nickname':
                 error = validateNickname(value);
                 break;
+            case 'description':
+                error = validateDescription(value);
+                break;
             case 'email':
                 error = validateEmail(value);
-                break;
-            case 'phone':
-                error = validatePhone(value);
                 break;
             case 'github':
             case 'portfolio':
                 error = validateURL(value);
+                break;
+            case 'discord':
+            case 'slack':
+                error = validateDiscordSlack(value);
                 break;
             default:
                 break;
@@ -242,34 +264,45 @@ const ProfileEdit = () => {
     const validateForm = () => {
         const newErrors = {
             nickname: validateNickname(formData.nickname),
-            email: validateEmail(formData.email),
-            phone: validatePhone(formData.phone),
-            github: validateURL(formData.github),
-            portfolio: validateURL(formData.portfolio),
+            description: '',
+            email: '',
+            github: '',
+            portfolio: '',
+            discord: '',
+            slack: '',
             skills: '',
             projects: {}
         };
 
-        // Validazione skills per freelancer
-        if (user.role === 'FREELANCER' && formData.skills.length === 0) {
-            newErrors.skills = 'Inserisci almeno una competenza';
-        }
+        // Validazioni solo per freelancer
+        if (user.role === 'FREELANCER') {
+            newErrors.description = validateDescription(formData.description);
+            newErrors.email = validateEmail(formData.email);
+            newErrors.github = validateURL(formData.github);
+            newErrors.portfolio = validateURL(formData.portfolio);
+            newErrors.discord = validateDiscordSlack(formData.discord);
+            newErrors.slack = validateDiscordSlack(formData.slack);
 
-        // Validazione progetti
-        formData.projects.forEach((project, index) => {
-            if (project.title && project.title.trim().length < 3) {
-                newErrors.projects[`${index}-title`] = 'Il titolo deve avere almeno 3 caratteri';
+            if (formData.skills.length === 0) {
+                newErrors.skills = 'Inserisci almeno una competenza';
             }
-            if (project.description && project.description.trim().length < 10) {
-                newErrors.projects[`${index}-description`] = 'La descrizione deve avere almeno 10 caratteri';
-            }
-            if (project.title && !project.description) {
-                newErrors.projects[`${index}-description`] = 'La descrizione è obbligatoria se hai inserito un titolo';
-            }
-            if (!project.title && project.description) {
-                newErrors.projects[`${index}-title`] = 'Il titolo è obbligatorio se hai inserito una descrizione';
-            }
-        });
+
+            // Validazione progetti
+            formData.projects.forEach((project, index) => {
+                if (project.title && project.title.trim().length < 3) {
+                    newErrors.projects[`${index}-title`] = 'Il titolo deve avere almeno 3 caratteri';
+                }
+                if (project.description && project.description.trim().length < 10) {
+                    newErrors.projects[`${index}-description`] = 'La descrizione deve avere almeno 10 caratteri';
+                }
+                if (project.title && !project.description) {
+                    newErrors.projects[`${index}-description`] = 'La descrizione è obbligatoria se hai inserito un titolo';
+                }
+                if (!project.title && project.description) {
+                    newErrors.projects[`${index}-title`] = 'Il titolo è obbligatorio se hai inserito una descrizione';
+                }
+            });
+        }
 
         setErrors(newErrors);
 
@@ -295,10 +328,19 @@ const ProfileEdit = () => {
         setSaving(true);
 
         try {
-            // Filtra progetti vuoti
-            const projectsToSend = formData.projects.filter(p =>
-                p.title?.trim() && p.description?.trim()
-            );
+            let dataToSend = { nickname: formData.nickname };
+
+            // Solo per freelancer aggiungi gli altri campi
+            if (user.role === 'FREELANCER') {
+                const projectsToSend = formData.projects.filter(p =>
+                    p.title?.trim() && p.description?.trim()
+                );
+
+                dataToSend = {
+                    ...formData,
+                    projects: projectsToSend
+                };
+            }
 
             const response = await fetch('/api/users/profile', {
                 method: 'PUT',
@@ -306,10 +348,7 @@ const ProfileEdit = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                 },
-                body: JSON.stringify({
-                    ...formData,
-                    projects: projectsToSend
-                })
+                body: JSON.stringify(dataToSend)
             });
 
             if (!response.ok) {
@@ -369,44 +408,49 @@ const ProfileEdit = () => {
                                 <span className="error-message">{errors.nickname}</span>
                             )}
                         </div>
-
-                        <div className="form-group">
-                            <label htmlFor="email">Email</label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                className={errors.email ? 'input-error' : ''}
-                                disabled={saving}
-                            />
-                            {errors.email && (
-                                <span className="error-message">{errors.email}</span>
-                            )}
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="phone">Telefono</label>
-                            <input
-                                type="tel"
-                                id="phone"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleInputChange}
-                                className={errors.phone ? 'input-error' : ''}
-                                placeholder="+39 123 456 7890"
-                                disabled={saving}
-                            />
-                            {errors.phone && (
-                                <span className="error-message">{errors.phone}</span>
-                            )}
-                        </div>
                     </div>
 
                     {/* Sezione Freelancer */}
                     {user.role === 'FREELANCER' && (
                         <>
+                            {/* Descrizione */}
+                            <div className="form-section">
+                                <h2>Descrizione</h2>
+
+                                <div className="form-group">
+                                    <label htmlFor="description">Parlaci di te</label>
+                                    <textarea
+                                        id="description"
+                                        name="description"
+                                        value={formData.description}
+                                        onChange={handleInputChange}
+                                        className={errors.description ? 'input-error' : ''}
+                                        rows="4"
+                                        placeholder="Descrivi la tua esperienza, le tue passioni e cosa ti rende unico..."
+                                        disabled={saving}
+                                    />
+                                    {errors.description && (
+                                        <span className="error-message">{errors.description}</span>
+                                    )}
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="email">Email</label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        className={errors.email ? 'input-error' : ''}
+                                        disabled={saving}
+                                    />
+                                    {errors.email && (
+                                        <span className="error-message">{errors.email}</span>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Skills */}
                             <div className="form-section">
                                 <h2>Competenze * {formData.skills.length > 0 && <span className="skills-count">({formData.skills.length}/20)</span>}</h2>
@@ -494,6 +538,40 @@ const ProfileEdit = () => {
                                     />
                                     {errors.portfolio && (
                                         <span className="error-message">{errors.portfolio}</span>
+                                    )}
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="discord">Discord</label>
+                                    <input
+                                        type="text"
+                                        id="discord"
+                                        name="discord"
+                                        placeholder="@username o https://discord.com/users/..."
+                                        value={formData.discord}
+                                        onChange={handleInputChange}
+                                        className={errors.discord ? 'input-error' : ''}
+                                        disabled={saving}
+                                    />
+                                    {errors.discord && (
+                                        <span className="error-message">{errors.discord}</span>
+                                    )}
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="slack">Slack</label>
+                                    <input
+                                        type="text"
+                                        id="slack"
+                                        name="slack"
+                                        placeholder="@username o link workspace"
+                                        value={formData.slack}
+                                        onChange={handleInputChange}
+                                        className={errors.slack ? 'input-error' : ''}
+                                        disabled={saving}
+                                    />
+                                    {errors.slack && (
+                                        <span className="error-message">{errors.slack}</span>
                                     )}
                                 </div>
                             </div>

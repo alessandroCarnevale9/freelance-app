@@ -9,9 +9,6 @@ const ProjectSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  link: {
-    type: String,
-  },
   imageIds: {
     type: [String],
     default: []
@@ -40,24 +37,18 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  
-  // Contatti
+
+  // Campi specifici per Freelancer
+  description: {
+    type: String,
+    trim: true,
+  },
   email: {
     type: String,
     lowercase: true,
     trim: true,
   },
-  phone: {
-    type: String,
-    trim: true,
-  },
-
-  // Campi specifici per Freelancer
-  titles: {
-    type: [String],
-    default: []
-  },
-  keySkills: {
+  skills: {  // Manteniamo 'skills' come nome coerente
     type: [String],
     default: []
   },
@@ -69,11 +60,19 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  discord: {
+    type: String,
+    trim: true,
+  },
+  slack: {
+    type: String,
+    trim: true,
+  },
   projects: {
     type: [ProjectSchema],
     default: [],
     validate: {
-      validator: function(projects) {
+      validator: function (projects) {
         if (!projects || projects.length === 0) return true;
         return projects.every(p => {
           const hasTitle = typeof p.title === 'string' && p.title.trim() !== '';
@@ -81,52 +80,60 @@ const userSchema = new mongoose.Schema({
           return hasTitle && hasDescription;
         });
       },
-      message: 'Ogni progetto deve avere title e description quando viene fornito'
+      message: 'Ogni progetto deve avere title e description'
     }
   },
 
-  // Statistiche
+  // Statistiche utente
   publishedJobs: {
     type: Number,
-    default: 0,
+    default: 0
   },
   completedJobs: {
     type: Number,
-    default: 0,
+    default: 0
   },
   totalEarnings: {
     type: Number,
-    default: 0,
+    default: 0
   },
   totalSpent: {
     type: Number,
-    default: 0,
-  },
+    default: 0
+  }
 }, {
   timestamps: true,
 });
 
-// Indici aggiuntivi (solo questi, address è già coperto da unique)
+// Indici
 userSchema.index({ role: 1 });
-userSchema.index({ keySkills: 1 });
+userSchema.index({ skills: 1 });
+userSchema.index({ address: 1, isActive: 1 });
 
 // Metodo per ottenere il profilo pubblico
-userSchema.methods.getPublicProfile = function() {
-  return {
+userSchema.methods.getPublicProfile = function () {
+  const publicData = {
     address: this.address,
     nickname: this.nickname,
     role: this.role,
-    email: this.email,
-    phone: this.phone,
-    titles: this.titles,
-    skills: this.keySkills, // Manteniamo 'skills' per compatibilità frontend
-    projects: this.projects,
-    github: this.github,
-    portfolio: this.portfolio,
+    createdAt: this.createdAt,
     publishedJobs: this.publishedJobs,
     completedJobs: this.completedJobs,
-    createdAt: this.createdAt,
   };
+
+  // Aggiungi campi specifici per FREELANCER
+  if (this.role === 'FREELANCER') {
+    publicData.description = this.description;
+    publicData.email = this.email;
+    publicData.skills = this.skills;  // Usa 'skills' non 'keySkills'
+    publicData.github = this.github;
+    publicData.portfolio = this.portfolio;
+    publicData.discord = this.discord;
+    publicData.slack = this.slack;
+    publicData.projects = this.projects;
+  }
+
+  return publicData;
 };
 
 module.exports = mongoose.model('User', userSchema);

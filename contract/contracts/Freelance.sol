@@ -173,14 +173,6 @@ contract Freelance is ReentrancyGuard {
         emit FundsReleased(_jobId, job.freelancer, amount);
     }
 
-    function updateAnnouncementData(
-        uint256 _jobId,
-        string calldata _newDataHash
-    ) external onlyClient(_jobId) atStage(_jobId, JobStatus.Open) {
-        announcements[_jobId].dataHash = _newDataHash;
-        emit AnnouncementUpdated(_jobId, _newDataHash);
-    }
-
     function updateAnnouncementDataAfterPresentation(
         uint256 _jobId,
         string calldata _newDataHash

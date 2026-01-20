@@ -1,6 +1,5 @@
 const User = require('../models/UserModel');
 const ApiError = require('../utils/ApiError');
-const bcrypt = require('bcrypt');
 
 // GET /api/user/profile/:address - Ottieni profilo di un utente
 const getProfile = async (req, res) => {
@@ -26,7 +25,6 @@ const getProfile = async (req, res) => {
 
 // PUT /api/user/profile - Aggiorna il proprio profilo
 const updateProfile = async (req, res) => {
-    // req.userId è popolato dal middleware verifyJWT
     const userId = req.userId;
 
     if (!userId) {
@@ -35,12 +33,14 @@ const updateProfile = async (req, res) => {
 
     const {
         nickname,
+        description,
         email,
-        phone,
-        skills,  // dal frontend arriva come 'skills'
+        skills,
         projects,
         github,
-        portfolio
+        portfolio,
+        discord,
+        slack
     } = req.body;
 
     const user = await User.findById(userId).exec();
@@ -50,54 +50,75 @@ const updateProfile = async (req, res) => {
     }
 
     // Validazione nickname
-    if (nickname && nickname.trim().length < 2) {
-        throw new ApiError(400, 'Il nickname deve essere di almeno 2 caratteri');
+    if (nickname !== undefined) {
+        if (!nickname || nickname.trim().length < 2) {
+            throw new ApiError(400, 'Il nickname deve essere di almeno 2 caratteri');
+        }
+        user.nickname = nickname.trim();
     }
 
     // Validazione email
-    if (email && email.trim() !== '') {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            throw new ApiError(400, 'Email non valida');
+    if (email !== undefined) {
+        if (email && email.trim() !== '') {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                throw new ApiError(400, 'Email non valida');
+            }
         }
+        user.email = email.trim();
     }
 
     // Validazione URL
     const urlRegex = /^https?:\/\/.+/i;
-    if (github && github.trim() !== '' && !urlRegex.test(github)) {
-        throw new ApiError(400, 'URL GitHub non valido');
-    }
-    if (portfolio && portfolio.trim() !== '' && !urlRegex.test(portfolio)) {
-        throw new ApiError(400, 'URL Portfolio non valido');
+
+    if (github !== undefined) {
+        if (github && github.trim() !== '' && !urlRegex.test(github)) {
+            throw new ApiError(400, 'URL GitHub non valido');
+        }
+        user.github = github.trim();
     }
 
-    // Validazione specifica per Freelancer
+    if (portfolio !== undefined) {
+        if (portfolio && portfolio.trim() !== '' && !urlRegex.test(portfolio)) {
+            throw new ApiError(400, 'URL Portfolio non valido');
+        }
+        user.portfolio = portfolio.trim();
+    }
+
+    // Campi specifici per Freelancer
     if (user.role === 'FREELANCER') {
-        if (skills && (!Array.isArray(skills) || skills.length === 0)) {
-            throw new ApiError(400, 'I freelancer devono avere almeno una skill');
+        // Validazione skills
+        if (skills !== undefined) {
+            if (!Array.isArray(skills) || skills.length === 0) {
+                throw new ApiError(400, 'I freelancer devono avere almeno una skill');
+            }
+            user.skills = skills.map(s => s.trim()).filter(Boolean);
         }
 
-        if (projects && Array.isArray(projects)) {
-            for (const project of projects) {
-                if (!project.title || !project.description) {
-                    throw new ApiError(400, 'Ogni progetto deve avere titolo e descrizione');
+        // Validazione progetti
+        if (projects !== undefined) {
+            if (Array.isArray(projects) && projects.length > 0) {
+                for (const project of projects) {
+                    if (!project.title || !project.description) {
+                        throw new ApiError(400, 'Ogni progetto deve avere titolo e descrizione');
+                    }
                 }
             }
+            user.projects = projects;
         }
-    }
 
-    // Aggiorna i campi
-    if (nickname) user.nickname = nickname.trim();
-    if (email !== undefined) user.email = email.trim();
-    if (phone !== undefined) user.phone = phone.trim();
+        // Altri campi freelancer
+        if (description !== undefined) {
+            user.description = description.trim();
+        }
 
-    // Campi specifici freelancer
-    if (user.role === 'FREELANCER') {
-        // Il frontend manda 'skills', ma nel DB è 'keySkills'
-        if (skills) user.keySkills = skills.map(s => s.trim()).filter(Boolean);
-        if (projects !== undefined) user.projects = projects;
-        if (github !== undefined) user.github = github.trim();
-        if (portfolio !== undefined) user.portfolio = portfolio.trim();
+        if (discord !== undefined) {
+            user.discord = discord.trim();
+        }
+
+        if (slack !== undefined) {
+            user.slack = slack.trim();
+        }
     }
 
     await user.save();
@@ -122,7 +143,7 @@ const searchUsers = async (req, res) => {
 
     if (skills) {
         const skillsArray = skills.split(',').map(s => s.trim());
-        filter.keySkills = { $in: skillsArray };
+        filter.skills = { $in: skillsArray };  // Usa 'skills' non 'keySkills'
     }
 
     if (query) {
@@ -133,17 +154,11 @@ const searchUsers = async (req, res) => {
     }
 
     const users = await User.find(filter)
-        .select('address nickname role keySkills projects publishedJobs completedJobs')
+        .select('address nickname role skills projects publishedJobs completedJobs')
         .limit(50)
         .exec();
 
-    // Trasforma keySkills in skills per il frontend
-    const transformedUsers = users.map(user => ({
-        ...user.toObject(),
-        skills: user.keySkills,
-    }));
-
-    res.status(200).json(transformedUsers);
+    res.status(200).json(users);
 };
 
 // GET /api/user/stats/:address - Ottieni statistiche utente
@@ -160,8 +175,8 @@ const getUserStats = async (req, res) => {
     }
 
     const stats = {
-        publishedJobs: user.publishedJobs,
-        completedJobs: user.completedJobs,
+        publishedJobs: user.publishedJobs || 0,
+        completedJobs: user.completedJobs || 0,
         totalEarnings: user.totalEarnings || 0,
         totalSpent: user.totalSpent || 0,
     };
@@ -169,7 +184,7 @@ const getUserStats = async (req, res) => {
     res.status(200).json(stats);
 };
 
-// DELETE /api/user/:id - Elimina utente (già esistente)
+// DELETE /api/user/:id - Elimina utente
 const deleteUser = async (req, res) => {
     const { id } = req.params;
 
@@ -183,8 +198,12 @@ const deleteUser = async (req, res) => {
         throw new ApiError(404, 'User not found.');
     }
 
-    // *** aggiungere controlli su chi fa cosa... ***
-    await targetUser.deleteOne();
+    // Soft delete
+    targetUser.isActive = false;
+    await targetUser.save();
+
+    // Oppure hard delete:
+    // await targetUser.deleteOne();
 
     res.json({ message: 'User successfully deleted.' });
 };

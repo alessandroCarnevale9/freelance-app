@@ -10,19 +10,29 @@ const RegistrationPage = () => {
   const { dispatch } = useAuthContext();
 
   const [name, setName] = useState("");
-  const [titles, setTitles] = useState("");
+  const [description, setDescription] = useState("");
+  const [email, setEmail] = useState("");
+  const [github, setGithub] = useState("");
+  const [portfolio, setPortfolio] = useState("");
+  const [discord, setDiscord] = useState("");
+  const [slack, setSlack] = useState("");
   const [keyskills, setKeyskills] = useState([]);
   const [skillInput, setSkillInput] = useState("");
 
   const [errors, setErrors] = useState({
     name: "",
-    titles: "",
+    description: "",
+    email: "",
+    github: "",
+    portfolio: "",
+    discord: "",
+    slack: "",
     skills: "",
     projects: {}
   });
 
   const [projects, setProjects] = useState([
-    { title: "", description: "", link: "", files: [], previews: [] },
+    { title: "", description: "", files: [], previews: [] },
   ]);
 
   const [loading, setLoading] = useState(false);
@@ -39,16 +49,44 @@ const RegistrationPage = () => {
 
   // Funzioni di validazione
   const validateName = (value) => {
-    if (!value || !value.trim()) return "Il nome è obbligatorio";
-    if (value.trim().length < 2) return "Il nome deve avere almeno 2 caratteri";
-    if (value.trim().length > 50) return "Il nome non può superare 50 caratteri";
+    if (!value || !value.trim()) return "Il nickname è obbligatorio";
+    if (value.trim().length < 2) return "Il nickname deve avere almeno 2 caratteri";
+    if (value.trim().length > 50) return "Il nickname non può superare 50 caratteri";
     return "";
   };
 
-  const validateTitle = (value) => {
-    if (!value || !value.trim()) return "Il titolo professionale è obbligatorio";
-    if (value.trim().length < 3) return "Il titolo deve avere almeno 3 caratteri";
-    if (value.trim().length > 100) return "Il titolo non può superare 100 caratteri";
+  const validateDescription = (value) => {
+    if (!value) return "";
+    if (value.trim().length < 10) return "La descrizione deve avere almeno 10 caratteri";
+    if (value.trim().length > 500) return "La descrizione non può superare 500 caratteri";
+    return "";
+  };
+
+  const validateEmail = (value) => {
+    if (!value) return "";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value) ? "" : "Email non valida";
+  };
+
+  const validateURL = (value) => {
+    if (!value) return "";
+    try {
+      new URL(value);
+      return value.startsWith('http://') || value.startsWith('https://')
+        ? ''
+        : 'L\'URL deve iniziare con http:// o https://';
+    } catch {
+      return 'URL non valido';
+    }
+  };
+
+  const validateDiscordSlack = (value) => {
+    if (!value) return "";
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return validateURL(value);
+    }
+    if (value.trim().length < 2) return "Deve avere almeno 2 caratteri";
+    if (value.trim().length > 100) return "Non può superare 100 caratteri";
     return "";
   };
 
@@ -73,18 +111,6 @@ const RegistrationPage = () => {
     return "";
   };
 
-  const validateProjectLink = (value) => {
-    if (!value || !value.trim()) return "";
-    try {
-      new URL(value);
-      return value.startsWith('http://') || value.startsWith('https://')
-        ? ''
-        : 'L\'URL deve iniziare con http:// o https://';
-    } catch {
-      return 'URL non valido';
-    }
-  };
-
   const getNonce = async () => {
     const response = await fetch("/api/auth/nonce");
     const data = await response.json();
@@ -97,10 +123,40 @@ const RegistrationPage = () => {
     setErrors((prev) => ({ ...prev, name: validateName(value) }));
   };
 
-  const handleTitleChange = (e) => {
+  const handleDescriptionChange = (e) => {
     const value = e.target.value;
-    setTitles(value);
-    setErrors((prev) => ({ ...prev, titles: validateTitle(value) }));
+    setDescription(value);
+    setErrors((prev) => ({ ...prev, description: validateDescription(value) }));
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    setErrors((prev) => ({ ...prev, email: validateEmail(value) }));
+  };
+
+  const handleGithubChange = (e) => {
+    const value = e.target.value;
+    setGithub(value);
+    setErrors((prev) => ({ ...prev, github: validateURL(value) }));
+  };
+
+  const handlePortfolioChange = (e) => {
+    const value = e.target.value;
+    setPortfolio(value);
+    setErrors((prev) => ({ ...prev, portfolio: validateURL(value) }));
+  };
+
+  const handleDiscordChange = (e) => {
+    const value = e.target.value;
+    setDiscord(value);
+    setErrors((prev) => ({ ...prev, discord: validateDiscordSlack(value) }));
+  };
+
+  const handleSlackChange = (e) => {
+    const value = e.target.value;
+    setSlack(value);
+    setErrors((prev) => ({ ...prev, slack: validateDiscordSlack(value) }));
   };
 
   const handleSkillInputChange = (e) => {
@@ -144,14 +200,11 @@ const RegistrationPage = () => {
     updatedProjects[index][field] = value;
     setProjects(updatedProjects);
 
-    // Validazione real-time del progetto
     let error = "";
     if (field === 'title') {
       error = validateProjectTitle(value);
     } else if (field === 'description') {
       error = validateProjectDescription(value);
-    } else if (field === 'link') {
-      error = validateProjectLink(value);
     }
 
     setErrors((prev) => ({
@@ -166,15 +219,13 @@ const RegistrationPage = () => {
   const isProjectEmpty = (p) =>
     !p.title?.trim() &&
     !p.description?.trim() &&
-    !p.link?.trim() &&
     (!p.files || p.files.length === 0);
 
   const handleProjectFileChange = (index, e) => {
     const selectedFiles = Array.from(e.target.files || []);
     if (selectedFiles.length === 0) return;
 
-    // Validazione dimensione file
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
     const invalidFiles = selectedFiles.filter(f => f.size > maxSize);
 
     if (invalidFiles.length > 0) {
@@ -182,7 +233,6 @@ const RegistrationPage = () => {
       return;
     }
 
-    // Validazione tipo file
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     const invalidTypes = selectedFiles.filter(f => !validTypes.includes(f.type));
 
@@ -191,7 +241,6 @@ const RegistrationPage = () => {
       return;
     }
 
-    // Limite massimo immagini per progetto
     const updatedProjects = [...projects];
     const currentImages = updatedProjects[index].files.length;
 
@@ -240,7 +289,7 @@ const RegistrationPage = () => {
 
     setProjects([
       ...projects,
-      { title: "", description: "", link: "", files: [], previews: [] },
+      { title: "", description: "", files: [], previews: [] },
     ]);
   };
 
@@ -250,7 +299,6 @@ const RegistrationPage = () => {
       return;
     }
 
-    // Revoca le URL delle preview prima di rimuovere il progetto
     const projectToRemove = projects[index];
     projectToRemove.previews.forEach((url) => URL.revokeObjectURL(url));
 
@@ -274,23 +322,24 @@ const RegistrationPage = () => {
   const validateForm = () => {
     const newErrors = {
       name: validateName(name),
-      titles: validateTitle(titles),
+      description: validateDescription(description),
+      email: validateEmail(email),
+      github: validateURL(github),
+      portfolio: validateURL(portfolio),
+      discord: validateDiscordSlack(discord),
+      slack: validateDiscordSlack(slack),
       skills: keyskills.length === 0 ? "Inserisci almeno una competenza" : "",
       projects: {}
     };
 
-    // Validazione progetti
     projects.forEach((project, index) => {
       if (!isProjectEmpty(project)) {
         const titleError = validateProjectTitle(project.title);
         const descError = validateProjectDescription(project.description);
-        const linkError = validateProjectLink(project.link);
 
         if (titleError) newErrors.projects[`${index}-title`] = titleError;
         if (descError) newErrors.projects[`${index}-description`] = descError;
-        if (linkError) newErrors.projects[`${index}-link`] = linkError;
 
-        // Verifica campi obbligatori nei progetti non vuoti
         if (project.title && !project.description) {
           newErrors.projects[`${index}-description`] = "La descrizione è obbligatoria se hai inserito un titolo";
         }
@@ -302,10 +351,14 @@ const RegistrationPage = () => {
 
     setErrors(newErrors);
 
-    // Controlla se ci sono errori
     const hasErrors =
       newErrors.name !== "" ||
-      newErrors.titles !== "" ||
+      newErrors.description !== "" ||
+      newErrors.email !== "" ||
+      newErrors.github !== "" ||
+      newErrors.portfolio !== "" ||
+      newErrors.discord !== "" ||
+      newErrors.slack !== "" ||
       newErrors.skills !== "" ||
       Object.keys(newErrors.projects).length > 0;
 
@@ -324,9 +377,7 @@ const RegistrationPage = () => {
 
     try {
       if (!window.ethereum) {
-        throw new Error(
-          "MetaMask non installato. Visita: https://metamask.io"
-        );
+        throw new Error("MetaMask non installato. Visita: https://metamask.io");
       }
 
       const formData = new FormData();
@@ -344,21 +395,24 @@ const RegistrationPage = () => {
       const payload = {
         address: address,
         nickname: name.trim(),
+        description: description.trim() || undefined,
+        email: email.trim() || undefined,
         role: role.toUpperCase(),
         signedMessage: signedMessage,
         nonce: nonce,
-        title: titles.trim(),
         skills: keyskills,
+        github: github.trim() || undefined,
+        portfolio: portfolio.trim() || undefined,
+        discord: discord.trim() || undefined,
+        slack: slack.trim() || undefined,
         projects: nonEmptyProjects.map((p) => ({
           title: p.title.trim(),
           description: p.description.trim(),
-          link: p.link.trim(),
         })),
       };
 
       formData.append("data", JSON.stringify(payload));
 
-      // Aggiungi i file al formData
       projects.forEach((proj, index_project) => {
         proj.files.forEach((file) => {
           formData.append(`${address}_project_${index_project}`, file);
@@ -425,7 +479,10 @@ const RegistrationPage = () => {
           </div>
         )}
 
-        <p className={errors.name ? "title-error" : ""}>Nome *</p>
+        {/* Informazioni Base */}
+        <h3 className="section-title">Informazioni Base</h3>
+
+        <p className={errors.name ? "title-error" : ""}>Nickname *</p>
         <input
           className={`input-field ${errors.name ? "input-error" : ""}`}
           value={name}
@@ -438,23 +495,37 @@ const RegistrationPage = () => {
           <div className="message-error">{errors.name}</div>
         )}
 
-        <p className={errors.titles ? "title-error" : ""}>
-          Titolo professionale *
-        </p>
-        <input
-          type="text"
-          value={titles}
-          className={`input-field ${errors.titles ? "input-error" : ""}`}
-          onChange={handleTitleChange}
-          placeholder="Es: Full Stack Developer"
+        <p className={errors.description ? "title-error" : ""}>Descrizione (Opzionale)</p>
+        <textarea
+          className={`input-field ${errors.description ? "input-error" : ""}`}
+          value={description}
+          onChange={handleDescriptionChange}
+          rows="4"
+          placeholder="Descrivi la tua esperienza, le tue passioni e cosa ti rende unico..."
           disabled={isOperationLoading}
         />
-        {errors.titles && (
-          <div className="message-error">{errors.titles}</div>
+        {errors.description && (
+          <div className="message-error">{errors.description}</div>
         )}
 
+        <p className={errors.email ? "title-error" : ""}>Email (Opzionale)</p>
+        <input
+          type="email"
+          value={email}
+          className={`input-field ${errors.email ? "input-error" : ""}`}
+          onChange={handleEmailChange}
+          placeholder="esempio@email.com"
+          disabled={isOperationLoading}
+        />
+        {errors.email && (
+          <div className="message-error">{errors.email}</div>
+        )}
+
+        {/* Competenze */}
+        <h3 className="section-title" style={{ marginTop: "30px" }}>Competenze</h3>
+
         <p className={errors.skills ? "title-error" : ""}>
-          Key skills * {keyskills.length > 0 && <span className="skills-count">({keyskills.length}/20)</span>}
+          Skills * {keyskills.length > 0 && <span className="skills-count">({keyskills.length}/20)</span>}
         </p>
         <div className="registration-page-form-skills-input">
           <input
@@ -502,10 +573,66 @@ const RegistrationPage = () => {
           </div>
         )}
 
+        {/* Link e Contatti */}
+        <h3 className="section-title" style={{ marginTop: "30px" }}>Link e Contatti (Opzionali)</h3>
+
+        <p className={errors.github ? "title-error" : ""}>GitHub</p>
+        <input
+          type="url"
+          value={github}
+          className={`input-field ${errors.github ? "input-error" : ""}`}
+          onChange={handleGithubChange}
+          placeholder="https://github.com/username"
+          disabled={isOperationLoading}
+        />
+        {errors.github && (
+          <div className="message-error">{errors.github}</div>
+        )}
+
+        <p className={errors.portfolio ? "title-error" : ""}>Portfolio</p>
+        <input
+          type="url"
+          value={portfolio}
+          className={`input-field ${errors.portfolio ? "input-error" : ""}`}
+          onChange={handlePortfolioChange}
+          placeholder="https://portfolio.com"
+          disabled={isOperationLoading}
+        />
+        {errors.portfolio && (
+          <div className="message-error">{errors.portfolio}</div>
+        )}
+
+        <p className={errors.discord ? "title-error" : ""}>Discord</p>
+        <input
+          type="text"
+          value={discord}
+          className={`input-field ${errors.discord ? "input-error" : ""}`}
+          onChange={handleDiscordChange}
+          placeholder="@username o https://discord.com/users/..."
+          disabled={isOperationLoading}
+        />
+        {errors.discord && (
+          <div className="message-error">{errors.discord}</div>
+        )}
+
+        <p className={errors.slack ? "title-error" : ""}>Slack</p>
+        <input
+          type="text"
+          value={slack}
+          className={`input-field ${errors.slack ? "input-error" : ""}`}
+          onChange={handleSlackChange}
+          placeholder="@username o link workspace"
+          disabled={isOperationLoading}
+        />
+        {errors.slack && (
+          <div className="message-error">{errors.slack}</div>
+        )}
+
         <hr style={{ margin: "30px 0", borderTop: "1px solid #eee" }} />
 
+        {/* Progetti */}
         <h3 className="registration-page-form-projects-title">
-          Progetti {projects.length > 0 && <span className="projects-count">({projects.length}/10)</span>}
+          Progetti Portfolio (Opzionali) {projects.length > 0 && <span className="projects-count">({projects.length}/10)</span>}
         </h3>
 
         {projects.map((proj, idx) => (
@@ -548,19 +675,6 @@ const RegistrationPage = () => {
             />
             {errors.projects[`${idx}-description`] && (
               <div className="message-error">{errors.projects[`${idx}-description`]}</div>
-            )}
-
-            <p>Link (Opzionale)</p>
-            <input
-              className={`input-field ${errors.projects[`${idx}-link`] ? "input-error" : ""}`}
-              type="text"
-              value={proj.link}
-              onChange={(e) => handleProjectChange(idx, "link", e.target.value)}
-              placeholder="https://progetto.com"
-              disabled={isOperationLoading}
-            />
-            {errors.projects[`${idx}-link`] && (
-              <div className="message-error">{errors.projects[`${idx}-link`]}</div>
             )}
 
             <div style={{ marginTop: "15px" }}>
