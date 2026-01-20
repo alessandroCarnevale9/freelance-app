@@ -328,6 +328,146 @@
     cursor: not-allowed;
 }
 
+/* --- Project Images Grid --- */
+.image-count {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 500;
+    margin-left: 6px;
+}
+
+.project-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.project-image-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--input-border);
+    transition: all 0.2s ease;
+}
+
+.project-image-item:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.project-image-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.remove-image-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(229, 57, 53, 0.9);
+    color: white;
+    border: 2px solid white;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0;
+}
+
+.remove-image-btn:hover:not(:disabled) {
+    background: var(--danger);
+    transform: scale(1.1);
+}
+
+.remove-image-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.new-badge {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    background: var(--primary);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.add-image-placeholder {
+    aspect-ratio: 1;
+    background: #fbfdff;
+    border: 2px dashed var(--primary);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.add-image-placeholder:hover:not(:disabled) {
+    background: #eef6fb;
+    border-style: solid;
+    transform: scale(1.02);
+}
+
+.add-image-placeholder:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.add-image-placeholder svg {
+    width: 40px;
+    height: 40px;
+    opacity: 0.7;
+}
+
+.add-image-btn {
+    aspect-ratio: 1;
+    background: #eef6fb;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--primary);
+    font-weight: 300;
+    transition: all 0.2s ease;
+}
+
+.add-image-btn:hover:not(:disabled) {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.02);
+}
+
+.add-image-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* --- Form Actions --- */
 .form-actions {
     display: flex;
@@ -463,6 +603,10 @@
         right: 12px;
         max-width: none;
     }
+
+    .project-images-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
 }
 
 @media (max-width: 480px) {
@@ -486,5 +630,10 @@
     .form-group input,
     .form-group textarea {
         padding: 9px 11px;
+    }
+
+    .project-images-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 8px;
     }
 }

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import Toast from '../../components/toast/Toast';
+import { AddImage } from '@icons';
 
 const ProfileEdit = () => {
     const { user } = useAuthContext();
@@ -45,14 +46,13 @@ const ProfileEdit = () => {
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
     };
 
-    // Validazione email
+    // Validazioni
     const validateEmail = (email) => {
         if (!email) return '';
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email) ? '' : 'Email non valida';
     };
 
-    // Validazione URL
     const validateURL = (url) => {
         if (!url) return '';
         try {
@@ -63,7 +63,6 @@ const ProfileEdit = () => {
         }
     };
 
-    // Validazione Discord/Slack
     const validateDiscordSlack = (value) => {
         if (!value) return '';
         if (value.startsWith('http://') || value.startsWith('https://')) {
@@ -74,7 +73,6 @@ const ProfileEdit = () => {
         return '';
     };
 
-    // Validazione nickname
     const validateNickname = (nickname) => {
         if (!nickname || !nickname.trim()) return 'Il nickname è obbligatorio';
         if (nickname.trim().length < 2) return 'Il nickname deve avere almeno 2 caratteri';
@@ -82,7 +80,6 @@ const ProfileEdit = () => {
         return '';
     };
 
-    // Validazione descrizione
     const validateDescription = (description) => {
         if (!description) return '';
         if (description.trim().length < 10) return 'La descrizione deve avere almeno 10 caratteri';
@@ -111,7 +108,13 @@ const ProfileEdit = () => {
                         portfolio: data.portfolio || '',
                         discord: data.discord || '',
                         slack: data.slack || '',
-                        projects: data.projects || []
+                        projects: (data.projects || []).map(p => ({
+                            ...p,
+                            existingImageIds: p.imageIds || [],
+                            newImages: [],
+                            newPreviews: [],
+                            imagesToDelete: []
+                        }))
                     });
                 }
             } catch (err) {
@@ -134,7 +137,6 @@ const ProfileEdit = () => {
             [name]: value
         }));
 
-        // Validazione real-time
         let error = '';
         switch (name) {
             case 'nickname':
@@ -211,7 +213,14 @@ const ProfileEdit = () => {
 
         setFormData(prev => ({
             ...prev,
-            projects: [...prev.projects, { title: '', description: '', imageIds: [] }]
+            projects: [...prev.projects, {
+                title: '',
+                description: '',
+                existingImageIds: [],
+                newImages: [],
+                newPreviews: [],
+                imagesToDelete: []
+            }]
         }));
     };
 
@@ -223,7 +232,6 @@ const ProfileEdit = () => {
             )
         }));
 
-        // Validazione progetti
         let error = '';
         if (field === 'title' && value && value.trim().length < 3) {
             error = 'Il titolo deve avere almeno 3 caratteri';
@@ -242,6 +250,13 @@ const ProfileEdit = () => {
     };
 
     const handleRemoveProject = (index) => {
+        const project = formData.projects[index];
+
+        // Revoca gli URL delle preview delle nuove immagini
+        if (project.newPreviews) {
+            project.newPreviews.forEach(url => URL.revokeObjectURL(url));
+        }
+
         setFormData(prev => ({
             ...prev,
             projects: prev.projects.filter((_, i) => i !== index)
@@ -261,6 +276,116 @@ const ProfileEdit = () => {
         });
     };
 
+    // Gestione immagini - VERSIONE CORRETTA
+    const handleProjectImageAdd = (projectIndex, e) => {
+        const files = e.target.files;
+
+        // Reset subito dell'input per permettere la selezione dello stesso file
+        e.target.value = '';
+
+        if (!files || files.length === 0) {
+            console.log('Nessun file selezionato');
+            return;
+        }
+
+        const selectedFiles = Array.from(files);
+        console.log('File selezionati:', selectedFiles.length);
+
+        const project = formData.projects[projectIndex];
+        if (!project) {
+            console.error('Progetto non trovato:', projectIndex);
+            return;
+        }
+
+        const currentTotal = (project.existingImageIds?.length || 0) + (project.newImages?.length || 0);
+        console.log('Immagini attuali:', currentTotal, 'Nuove:', selectedFiles.length);
+
+        // Validazioni
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const invalidFiles = selectedFiles.filter(f => f.size > maxSize);
+        if (invalidFiles.length > 0) {
+            addToast(`Alcuni file superano i 5MB: ${invalidFiles.map(f => f.name).join(', ')}`, 'error');
+            return;
+        }
+
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        const invalidTypes = selectedFiles.filter(f => !validTypes.includes(f.type));
+        if (invalidTypes.length > 0) {
+            addToast('Tipo di file non supportato. Usa: JPEG, PNG, GIF, WEBP', 'error');
+            console.log('Tipi non validi:', invalidTypes.map(f => f.type));
+            return;
+        }
+
+        if (currentTotal + selectedFiles.length > 5) {
+            addToast(`Puoi aggiungere massimo 5 immagini per progetto (attuali: ${currentTotal})`, 'error');
+            return;
+        }
+
+        // Crea preview
+        const newPreviews = selectedFiles.map(f => {
+            const url = URL.createObjectURL(f);
+            console.log('Preview creata:', url);
+            return url;
+        });
+
+        setFormData(prev => {
+            const updatedProjects = prev.projects.map((p, i) => {
+                if (i !== projectIndex) return p;
+
+                return {
+                    ...p,
+                    newImages: [...(p.newImages || []), ...selectedFiles],
+                    newPreviews: [...(p.newPreviews || []), ...newPreviews]
+                };
+            });
+
+            console.log('Stato aggiornato per progetto', projectIndex, {
+                newImagesCount: updatedProjects[projectIndex].newImages.length,
+                newPreviewsCount: updatedProjects[projectIndex].newPreviews.length
+            });
+
+            return {
+                ...prev,
+                projects: updatedProjects
+            };
+        });
+    };
+
+    const handleRemoveExistingImage = (projectIndex, imageId) => {
+        setFormData(prev => ({
+            ...prev,
+            projects: prev.projects.map((p, i) =>
+                i === projectIndex
+                    ? {
+                        ...p,
+                        existingImageIds: p.existingImageIds.filter(id => id !== imageId),
+                        imagesToDelete: [...(p.imagesToDelete || []), imageId]
+                    }
+                    : p
+            )
+        }));
+    };
+
+    const handleRemoveNewImage = (projectIndex, imageIndex) => {
+        setFormData(prev => ({
+            ...prev,
+            projects: prev.projects.map((p, i) => {
+                if (i !== projectIndex) return p;
+
+                const urlToRevoke = p.newPreviews[imageIndex];
+                if (urlToRevoke) {
+                    URL.revokeObjectURL(urlToRevoke);
+                }
+
+                return {
+                    ...p,
+                    newImages: p.newImages.filter((_, idx) => idx !== imageIndex),
+                    newPreviews: p.newPreviews.filter((_, idx) => idx !== imageIndex)
+                };
+            })
+        }));
+    };
+
     const validateForm = () => {
         const newErrors = {
             nickname: validateNickname(formData.nickname),
@@ -274,7 +399,6 @@ const ProfileEdit = () => {
             projects: {}
         };
 
-        // Validazioni solo per freelancer
         if (user.role === 'FREELANCER') {
             newErrors.description = validateDescription(formData.description);
             newErrors.email = validateEmail(formData.email);
@@ -287,7 +411,6 @@ const ProfileEdit = () => {
                 newErrors.skills = 'Inserisci almeno una competenza';
             }
 
-            // Validazione progetti
             formData.projects.forEach((project, index) => {
                 if (project.title && project.title.trim().length < 3) {
                     newErrors.projects[`${index}-title`] = 'Il titolo deve avere almeno 3 caratteri';
@@ -306,7 +429,6 @@ const ProfileEdit = () => {
 
         setErrors(newErrors);
 
-        // Controlla se ci sono errori
         const hasErrors = Object.values(newErrors).some(error => {
             if (typeof error === 'string') return error !== '';
             if (typeof error === 'object') return Object.keys(error).length > 0;
@@ -328,17 +450,78 @@ const ProfileEdit = () => {
         setSaving(true);
 
         try {
+            const token = localStorage.getItem('accessToken');
+
+            // 1. Elimina le immagini marcate per la cancellazione
+            for (const project of formData.projects) {
+                if (project.imagesToDelete && project.imagesToDelete.length > 0) {
+                    for (const imageId of project.imagesToDelete) {
+                        try {
+                            await fetch(`/api/files/${imageId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                        } catch (err) {
+                            console.error('Errore eliminazione immagine:', err);
+                        }
+                    }
+                }
+            }
+
+            // 2. Carica le nuove immagini
+            const updatedProjects = [];
+
+            for (let i = 0; i < formData.projects.length; i++) {
+                const project = formData.projects[i];
+
+                if (!project.title?.trim() || !project.description?.trim()) {
+                    continue; // Salta progetti vuoti
+                }
+
+                let newImageIds = [];
+
+                if (project.newImages && project.newImages.length > 0) {
+                    const formDataUpload = new FormData();
+
+                    // Il backend si aspetta il campo 'files' (vedere upload.array('files', 10))
+                    project.newImages.forEach((file) => {
+                        formDataUpload.append('files', file);
+                    });
+
+                    try {
+                        const uploadResponse = await fetch('/api/users/upload-images', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: formDataUpload
+                        });
+
+                        if (uploadResponse.ok) {
+                            const uploadData = await uploadResponse.json();
+                            newImageIds = uploadData.imageIds || [];
+                        }
+                    } catch (err) {
+                        console.error('Errore upload immagini:', err);
+                    }
+                }
+
+                updatedProjects.push({
+                    title: project.title.trim(),
+                    description: project.description.trim(),
+                    imageIds: [...(project.existingImageIds || []), ...newImageIds]
+                });
+            }
+
+            // 3. Aggiorna il profilo
             let dataToSend = { nickname: formData.nickname };
 
-            // Solo per freelancer aggiungi gli altri campi
             if (user.role === 'FREELANCER') {
-                const projectsToSend = formData.projects.filter(p =>
-                    p.title?.trim() && p.description?.trim()
-                );
-
                 dataToSend = {
                     ...formData,
-                    projects: projectsToSend
+                    projects: updatedProjects
                 };
             }
 
@@ -346,7 +529,7 @@ const ProfileEdit = () => {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(dataToSend)
             });
@@ -369,6 +552,17 @@ const ProfileEdit = () => {
         }
     };
 
+    // Cleanup delle preview quando il componente si smonta
+    useEffect(() => {
+        return () => {
+            formData.projects.forEach(p => {
+                if (p.newPreviews) {
+                    p.newPreviews.forEach(url => URL.revokeObjectURL(url));
+                }
+            });
+        };
+    }, []);
+
     if (loading) {
         return (
             <div className="profile-edit">
@@ -379,6 +573,16 @@ const ProfileEdit = () => {
             </div>
         );
     }
+
+    const triggerFileInput = (index) => {
+        const input = document.getElementById(`file-input-${index}`);
+        if (input) {
+            console.log('Triggering file input per progetto', index);
+            input.click();
+        } else {
+            console.error('Input file non trovato per progetto', index);
+        }
+    };
 
     return (
         <div className="profile-edit">
@@ -580,49 +784,135 @@ const ProfileEdit = () => {
                             <div className="form-section">
                                 <h2>Progetti Portfolio {formData.projects.length > 0 && <span className="projects-count">({formData.projects.length}/10)</span>}</h2>
 
-                                {formData.projects.map((project, index) => (
-                                    <div key={index} className="project-form-item">
-                                        <div className="project-form-header">
-                                            <h3>Progetto {index + 1}</h3>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveProject(index)}
-                                                disabled={saving}
-                                                className="remove-project-btn"
-                                            >
-                                                Rimuovi
-                                            </button>
-                                        </div>
+                                {formData.projects.map((project, index) => {
+                                    const totalImages = (project.existingImageIds?.length || 0) + (project.newImages?.length || 0);
 
-                                        <div className="form-group">
-                                            <label>Titolo</label>
-                                            <input
-                                                type="text"
-                                                value={project.title}
-                                                onChange={(e) => handleProjectChange(index, 'title', e.target.value)}
-                                                className={errors.projects[`${index}-title`] ? 'input-error' : ''}
-                                                disabled={saving}
-                                            />
-                                            {errors.projects[`${index}-title`] && (
-                                                <span className="error-message">{errors.projects[`${index}-title`]}</span>
-                                            )}
-                                        </div>
+                                    return (
+                                        <div key={index} className="project-form-item">
+                                            <div className="project-form-header">
+                                                <h3>Progetto {index + 1}</h3>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveProject(index)}
+                                                    disabled={saving}
+                                                    className="remove-project-btn"
+                                                >
+                                                    Rimuovi
+                                                </button>
+                                            </div>
 
-                                        <div className="form-group">
-                                            <label>Descrizione</label>
-                                            <textarea
-                                                value={project.description}
-                                                onChange={(e) => handleProjectChange(index, 'description', e.target.value)}
-                                                className={errors.projects[`${index}-description`] ? 'input-error' : ''}
-                                                rows="4"
-                                                disabled={saving}
-                                            />
-                                            {errors.projects[`${index}-description`] && (
-                                                <span className="error-message">{errors.projects[`${index}-description`]}</span>
-                                            )}
+                                            <div className="form-group">
+                                                <label>Titolo</label>
+                                                <input
+                                                    type="text"
+                                                    value={project.title}
+                                                    onChange={(e) => handleProjectChange(index, 'title', e.target.value)}
+                                                    className={errors.projects[`${index}-title`] ? 'input-error' : ''}
+                                                    disabled={saving}
+                                                />
+                                                {errors.projects[`${index}-title`] && (
+                                                    <span className="error-message">{errors.projects[`${index}-title`]}</span>
+                                                )}
+                                            </div>
+
+                                            <div className="form-group">
+                                                <label>Descrizione</label>
+                                                <textarea
+                                                    value={project.description}
+                                                    onChange={(e) => handleProjectChange(index, 'description', e.target.value)}
+                                                    className={errors.projects[`${index}-description`] ? 'input-error' : ''}
+                                                    rows="4"
+                                                    disabled={saving}
+                                                />
+                                                {errors.projects[`${index}-description`] && (
+                                                    <span className="error-message">{errors.projects[`${index}-description`]}</span>
+                                                )}
+                                            </div>
+
+                                            {/* Gestione Immagini */}
+                                            <div className="form-group">
+                                                <label>
+                                                    Immagini {totalImages > 0 && <span className="image-count">({totalImages}/5)</span>}
+                                                </label>
+
+                                                <input
+                                                    id={`file-input-${index}`}
+                                                    type="file"
+                                                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                                    multiple
+                                                    style={{ display: 'none' }}
+                                                    onChange={(e) => handleProjectImageAdd(index, e)}
+                                                    disabled={saving}
+                                                />
+
+                                                <div className="project-images-grid">
+                                                    {/* Immagini esistenti */}
+                                                    {project.existingImageIds && project.existingImageIds.map((imageId, imgIndex) => (
+                                                        <div key={`existing-${imgIndex}`} className="project-image-item">
+                                                            <img
+                                                                src={`/api/files/${imageId}`}
+                                                                alt={`Progetto ${index + 1} - ${imgIndex + 1}`}
+                                                                className="project-image-preview"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                className="remove-image-btn"
+                                                                onClick={() => handleRemoveExistingImage(index, imageId)}
+                                                                disabled={saving}
+                                                            >
+                                                                ×
+                                                            </button>
+                                                        </div>
+                                                    ))}
+
+                                                    {/* Nuove immagini */}
+                                                    {project.newPreviews && project.newPreviews.map((preview, imgIndex) => (
+                                                        <div key={`new-${imgIndex}`} className="project-image-item">
+                                                            <img
+                                                                src={preview}
+                                                                alt={`Nuova ${imgIndex + 1}`}
+                                                                className="project-image-preview"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                className="remove-image-btn"
+                                                                onClick={() => handleRemoveNewImage(index, imgIndex)}
+                                                                disabled={saving}
+                                                            >
+                                                                ×
+                                                            </button>
+                                                            <span className="new-badge">Nuova</span>
+                                                        </div>
+                                                    ))}
+
+                                                    {/* Pulsante aggiungi se sotto il limite */}
+                                                    {totalImages === 0 && (
+                                                        <button
+                                                            type="button"
+                                                            className="add-image-placeholder"
+                                                            onClick={() => triggerFileInput(index)}
+                                                            disabled={saving}
+                                                        >
+                                                            <AddImage />
+                                                            <span>Aggiungi immagine</span>
+                                                        </button>
+                                                    )}
+
+                                                    {totalImages > 0 && totalImages < 5 && (
+                                                        <button
+                                                            type="button"
+                                                            className="add-image-btn"
+                                                            onClick={() => triggerFileInput(index)}
+                                                            disabled={saving}
+                                                        >
+                                                            +
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
 
                                 <button
                                     type="button"

@@ -10,7 +10,7 @@ import ProfileEdit from './pages/profile-edit/ProfileEdit';
 import NavBar from './components/nav/NavBar';
 import AnnouncementCreationPage from './pages/announcementCreation/AnnouncementCreationPage';
 
-// Componente per proteggere le route che richiedono autenticazione
+// Route protetta base - richiede autenticazione
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuthContext();
 
@@ -21,13 +21,32 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Componente per reindirizzare utenti già loggati dalla home
+// Route protetta per ruolo specifico
+const RoleProtectedRoute = ({ children, allowedRoles }) => {
+  const { user } = useAuthContext();
+
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (!allowedRoles.includes(user.role)) {
+    // Reindirizza alla dashboard corretta se il ruolo non è autorizzato
+    if (user.role === 'FREELANCER') {
+      return <Navigate to="/freelancer-dashboard" replace />;
+    } else if (user.role === 'CLIENT') {
+      return <Navigate to="/client-dashboard" replace />;
+    }
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+// Route pubbliche - redirect se già loggato
 const PublicRoute = ({ children }) => {
   const { user } = useAuthContext();
 
   if (user) {
-    console.log('PublicRoute - User data:', user);
-    // Reindirizza alla dashboard appropriata in base al ruolo
     if (user.role === 'FREELANCER') {
       return <Navigate to="/freelancer-dashboard" replace />;
     } else if (user.role === 'CLIENT') {
@@ -38,15 +57,13 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
-// Componente per reindirizzare alla dashboard corretta
+// Reindirizza alla dashboard corretta in base al ruolo
 const DashboardRedirect = () => {
   const { user } = useAuthContext();
 
   if (!user) {
     return <Navigate to="/" replace />;
   }
-
-  console.log('DashboardRedirect - User data:', user);
 
   if (user.role === 'FREELANCER') {
     return <Navigate to="/freelancer-dashboard" replace />;
@@ -76,39 +93,44 @@ function App() {
 
             <Route
               path="/registration"
-              element={<RegistrationPage />}
+              element={
+                <PublicRoute>
+                  <RegistrationPage />
+                </PublicRoute>
+              }
             />
 
-            {/* Route protette - richiedono autenticazione */}
+            {/* Dashboard Freelancer - SOLO per FREELANCER */}
             <Route
               path="/freelancer-dashboard"
               element={
-                <ProtectedRoute>
+                <RoleProtectedRoute allowedRoles={['FREELANCER']}>
                   <FreelancerDashboard />
-                </ProtectedRoute>
+                </RoleProtectedRoute>
               }
             />
 
+            {/* Dashboard Cliente - SOLO per CLIENT */}
             <Route
               path="/client-dashboard"
               element={
-                <ProtectedRoute>
+                <RoleProtectedRoute allowedRoles={['CLIENT']}>
                   <ClientDashboard />
-                </ProtectedRoute>
+                </RoleProtectedRoute>
               }
             />
 
-            {/* Route annunci - protetta */}
+            {/* Creazione annunci - SOLO per CLIENT */}
             <Route
               path="/dashboard/announcement-creation"
               element={
-                <ProtectedRoute>
+                <RoleProtectedRoute allowedRoles={['CLIENT']}>
                   <AnnouncementCreationPage />
-                </ProtectedRoute>
+                </RoleProtectedRoute>
               }
             />
 
-            {/* Route profilo */}
+            {/* Profilo - accessibile a tutti gli utenti autenticati */}
             <Route
               path="/profile/:address"
               element={
@@ -133,7 +155,7 @@ function App() {
               element={<DashboardRedirect />}
             />
 
-            {/* Catch-all route - reindirizza alla home */}
+            {/* Catch-all route */}
             <Route
               path="*"
               element={<Navigate to="/" replace />}

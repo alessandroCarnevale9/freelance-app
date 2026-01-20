@@ -153,7 +153,6 @@ const FreelancerProfileContent = ({ profile }) => {
                 </div>
             )}
 
-            {/* Link esterni - Corretti tag <a> */}
             {(profile.github || profile.portfolio || profile.discord || profile.slack) && (
                 <div className="profile-section">
                     <h2>Link</h2>
@@ -208,18 +207,32 @@ const FreelancerProfileContent = ({ profile }) => {
                     <div className="projects-grid">
                         {profile.projects.map((project, index) => (
                             <div key={index} className="project-card">
+                                {/* Galleria Immagini con Carosello */}
                                 {project.imageIds && project.imageIds.length > 0 && (
-                                    <div className="project-images">
-                                        {project.imageIds.map((imageId, imgIndex) => (
-                                            <img
-                                                key={imgIndex}
-                                                src={`/api/files/${imageId}`}
-                                                alt={`${project.title} - ${imgIndex + 1}`}
-                                                className="project-image"
-                                            />
-                                        ))}
+                                    <div className="project-images-wrapper">
+                                        <div className="project-images-carousel">
+                                            {project.imageIds.map((imageId, imgIndex) => (
+                                                <img
+                                                    key={imgIndex}
+                                                    src={`/api/files/${imageId}`}
+                                                    alt={`${project.title} - immagine ${imgIndex + 1}`}
+                                                    className="project-image"
+                                                    onError={(e) => {
+                                                        e.target.onerror = null;
+                                                        e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23f0f0f0"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-family="sans-serif" font-size="14"%3EImmagine non disponibile%3C/text%3E%3C/svg%3E';
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                        {project.imageIds.length > 1 && (
+                                            <div className="images-counter">
+                                                {project.imageIds.length} {project.imageIds.length === 1 ? 'immagine' : 'immagini'}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
+
+                                {/* Contenuto Progetto */}
                                 <div className="project-content">
                                     <h3 className="project-title">{project.title}</h3>
                                     <p className="project-description">{project.description}</p>

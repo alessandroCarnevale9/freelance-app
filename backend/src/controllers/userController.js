@@ -1,5 +1,6 @@
 const User = require('../models/UserModel');
 const ApiError = require('../utils/ApiError');
+const { Readable } = require('stream');
 
 // GET /api/user/profile/:address - Ottieni profilo di un utente
 const getProfile = async (req, res) => {
@@ -143,7 +144,7 @@ const searchUsers = async (req, res) => {
 
     if (skills) {
         const skillsArray = skills.split(',').map(s => s.trim());
-        filter.skills = { $in: skillsArray };  // Usa 'skills' non 'keySkills'
+        filter.skills = { $in: skillsArray };
     }
 
     if (query) {
@@ -208,10 +209,125 @@ const deleteUser = async (req, res) => {
     res.json({ message: 'User successfully deleted.' });
 };
 
+// ============================================
+// GESTIONE UPLOAD IMMAGINI
+// ============================================
+
+// Helper function per caricare un file su GridFS
+const uploadFileToGridFS = (bucket, file) => {
+    return new Promise((resolve, reject) => {
+        // Genera un ID univoco per il file
+        const uniqueId = `${file.fieldname}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        // Crea uno stream leggibile dal buffer del file
+        const readableStream = new Readable();
+        readableStream.push(file.buffer);
+        readableStream.push(null);
+
+        // Apri uno stream di upload su GridFS
+        const uploadStream = bucket.openUploadStream(file.originalname, {
+            id: uniqueId,
+            metadata: {
+                contentType: file.mimetype,
+            },
+        });
+
+        // Collega lo stream leggibile allo stream di upload
+        readableStream.pipe(uploadStream);
+
+        uploadStream.on('error', (err) => {
+            console.error('Errore upload file:', err);
+            reject(err);
+        });
+
+        uploadStream.on('finish', () => {
+            resolve(uniqueId);
+        });
+    });
+};
+
+// POST /api/users/upload-images - Upload immagini progetti
+const uploadProjectImages = (bucket) => {
+    return async (req, res) => {
+        try {
+            const files = req.files;
+
+            if (!files || files.length === 0) {
+                return res.status(400).json({
+                    error: 'Nessun file caricato',
+                    success: false
+                });
+            }
+
+            if (!bucket) {
+                return res.status(500).json({
+                    error: 'GridFS bucket non disponibile',
+                    success: false
+                });
+            }
+
+            // Validazioni
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+
+            // Verifica dimensione e tipo
+            for (const file of files) {
+                if (file.size > maxSize) {
+                    return res.status(400).json({
+                        error: `Il file ${file.originalname} supera i 5MB`,
+                        success: false
+                    });
+                }
+
+                if (!allowedTypes.includes(file.mimetype)) {
+                    return res.status(400).json({
+                        error: `Il file ${file.originalname} non è un tipo di immagine supportato`,
+                        success: false
+                    });
+                }
+            }
+
+            // Upload di ogni file in GridFS
+            const uploadedImageIds = [];
+
+            for (const file of files) {
+                try {
+                    const imageId = await uploadFileToGridFS(bucket, file);
+                    uploadedImageIds.push(imageId);
+                } catch (err) {
+                    console.error('Errore upload singolo file:', err);
+                    // Continua con gli altri file anche se uno fallisce
+                }
+            }
+
+            if (uploadedImageIds.length === 0) {
+                return res.status(500).json({
+                    error: 'Nessuna immagine è stata caricata con successo',
+                    success: false
+                });
+            }
+
+            res.status(200).json({
+                success: true,
+                imageIds: uploadedImageIds,
+                message: `${uploadedImageIds.length} immagine/i caricata/e con successo`
+            });
+
+        } catch (error) {
+            console.error('Errore upload immagini:', error);
+            res.status(500).json({
+                error: error.message || 'Errore durante l\'upload delle immagini',
+                success: false
+            });
+        }
+    };
+};
+
 module.exports = {
     getProfile,
     updateProfile,
     searchUsers,
     getUserStats,
     deleteUser,
+    uploadProjectImages,
 };
