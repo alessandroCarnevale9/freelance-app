@@ -19,7 +19,8 @@ const {
     deleteProjectFileForAnnouncement,
     getAnnouncementsForClient,
     getAnnouncementDetailsClient,
-    getAnnouncementDetailsFreelancer
+    getAnnouncementDetailsFreelancer,
+    getNumberOfCandidatesForAnnouncement
 } = require('../controllers/announcementController');
 
 module.exports = (bucket) => {
@@ -30,6 +31,7 @@ module.exports = (bucket) => {
     router.post('/add-candidate', verifyRole('FREELANCER'), addCandidate);
     router.delete('/delete-candidate', verifyRole('FREELANCER'), deleteCandidate);
     router.delete('/candidates/:announcementId', verifyRole('CLIENT'), deleteAllCandidatesForAnnouncement);
+    router.get('/candidates/number/:announcementId', getNumberOfCandidatesForAnnouncement);
     router.get('/candidates/:announcementId', verifyRole('CLIENT'), getCandidatesByAnnouncement);
     router.get('/announcements/:candidateAddress', verifyRole('FREELANCER'), getAnnouncementsForCandidate);
     router.get('/announcements/registred/:candidateAddress', verifyRole('FREELANCER'), getRegistredAnnouncementsForCandidate);

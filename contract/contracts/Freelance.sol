@@ -209,9 +209,10 @@ contract Freelance is ReentrancyGuard {
         uint256 _jobId
     ) external onlyClient(_jobId) 
     nonReentrant
-    atStage(_jobId, JobStatus.Open)
     transitionAfter(_jobId, JobStatus.Cancelled)
      {
+        Announcement storage job = announcements[_jobId];
+        require(((block.timestamp > job.deadline && (job.state != JobStatus.Completed && job.state != JobStatus.Cancelled)) || (job.state == JobStatus.Open)), "La deadline non e' ancora stata superata");
         uint256 amount = announcements[_jobId].budget;
         announcements[_jobId].budget = 0;
 

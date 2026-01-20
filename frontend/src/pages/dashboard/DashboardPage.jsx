@@ -58,35 +58,50 @@ const DashboardPage = () => {
 
   // Usiamo i dati mockati come stato iniziale
   const [announcements, setAnnouncements] = useState([]);
+  const [delayedAnnouncements, setDelayedAnnouncements] = useState([]);
 
   // --- STATO PAGINAZIONE ---
   const [currentPage, setCurrentPage] = useState(1);
   const [toasts, setToasts] = useState([]);
-  const [isActionLoading, setIsActionLoading] = useState({state: false, message: ""});
+  const [isActionLoading, setIsActionLoading] = useState({
+    state: false,
+    message: "",
+  });
   const itemsPerPage = 5;
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
-      setIsActionLoading({state: true, message: "Caricamento"});
+      setIsActionLoading({ state: true, message: "Caricamento" });
       try {
         const resFreelancerAnnouncements = await fetch(
           `/api/announcement/announcements/client/${user.address}`,
           {
             method: "GET",
-            headers: { 
+            headers: {
               "Content-Type": "application/json",
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
             },
           }
         );
 
         const announcements = await resFreelancerAnnouncements.json();
 
+
+        const _delayedAnnouncements = announcements.filter((a) => {
+          const deadlineDate = new Date(a.deadline);
+          return (
+            deadlineDate <= Date.now() &&
+            a.status !== "Cancelled" &&
+            a.status !== "Completed"
+          );
+        });
+
         setAnnouncements(announcements);
+        setDelayedAnnouncements(_delayedAnnouncements);
       } catch (err) {
         console.error("Errore fetch announcements:", err);
       } finally {
-        setIsActionLoading({...isActionLoading, state: false});
+        setIsActionLoading({ ...isActionLoading, state: false });
       }
     };
 
@@ -122,7 +137,10 @@ const DashboardPage = () => {
   };
 
   const deleteAnnouncement = async (announcementId) => {
-    setIsActionLoading({state: true, message: "Eliminazione\ncontrolla il wallet MetaMask"});
+    setIsActionLoading({
+      state: true,
+      message: "Eliminazione\ncontrolla il wallet MetaMask",
+    });
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
@@ -142,7 +160,7 @@ const DashboardPage = () => {
       console.error("Errore selezione candidato:", err);
       addToast("Errore durante la selezione del candidato", "error");
     } finally {
-      setIsActionLoading({...isActionLoading, state:false});
+      setIsActionLoading({ ...isActionLoading, state: false });
     }
   };
 
@@ -186,6 +204,27 @@ const DashboardPage = () => {
       </section>
 
       <section className="cta-row">
+        {delayedAnnouncements.length > 0 && (
+          <div
+            className="cta-box"
+            style={{
+              marginBottom: "20px",
+              backgroundColor: "#fff4e5",
+              border: "1px solid #ffcc80",
+            }}
+          >
+            <div>
+              <h3 style={{ color: "black" }}>Annunci Scaduti</h3>
+              <p className="muted" style={{ color: "black" }}>
+                Sono presenti annunci che vanno oltre la deadline stabilita,
+                puoi scegliere se eleiminarli e ricevere rimborso oppure
+                aspettare che freelancer concluda il lavoro.
+              </p>
+            </div>
+            <div></div>
+          </div>
+        )}
+
         <div className="cta-box">
           <div>
             <h3>Crea un nuovo annuncio</h3>
@@ -261,23 +300,24 @@ const DashboardPage = () => {
                   <td data-label="Deadline">{formatDate(a.deadline)}</td>
                   <td data-label="Azioni" className="actions-cell">
                     <button
-                        className="action-btn"
-                        title="Visualizza"
-                        onClick={() =>
-                          navigate(`/client-dashboard/announcement/${a.id}`, {
-                            state: { announcement: a },
-                          })
-                        }
-                      >
-                        Visualizza
-                      </button>
-                    {a.status === "Open" && (
-                      <button className="action-btn" title="Modifica">
+                      className="action-btn"
+                      title="Visualizza"
+                      onClick={() =>
+                        navigate(`/client-dashboard/announcement/${a.id}`, {
+                          state: { announcement: a },
+                        })
+                      }
+                    >
+                      Visualizza
+                    </button>
+                    {/* {(a.status === "Open" && candidatesNumber.find((c) => c?.id === a.id)?.number == 0) && (
+                      <button className="action-btn" title="Modifica" onClick={() => navigate(`/dashboard/announcement-edit/${a.id}`)}>
                         Modifica
                       </button>
-                    )}
+                    )} */}
 
-                    {a.status === "Open" && (
+                    {(a.status === "Open" ||
+                      delayedAnnouncements.find((da) => da.id === a.id)) && (
                       <button
                         className="action-btn danger"
                         title="Elimina"

@@ -1033,6 +1033,17 @@ const deleteProjectFileForAnnouncement = (bucket) => {
     }
 }
 
+const getNumberOfCandidatesForAnnouncement = async (req, res) => {
+    const { announcementId } = req.params;
+
+    try {
+        const candidates = await Announcement.find({ announcement: announcementId }).exec()
+        res.status(200).json(candidates.length);
+    } catch (err) {
+        throw new ApiError(500, err);
+    }
+}
+
 module.exports = {
     addCandidate,
     deleteCandidate,
@@ -1048,5 +1059,6 @@ module.exports = {
     deleteProjectFileForAnnouncement,
     getAnnouncementsForClient,
     getAnnouncementDetailsClient,
-    getAnnouncementDetailsFreelancer
+    getAnnouncementDetailsFreelancer,
+    getNumberOfCandidatesForAnnouncement
 };

@@ -120,9 +120,9 @@ const AnnouncementReviewPage = () => {
           `/api/announcement/announcements/client-details/${id}`,
           {
             method: "GET",
-            headers: { 
+            headers: {
               "Content-Type": "application/json",
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
             },
           }
         );
@@ -217,9 +217,9 @@ const AnnouncementReviewPage = () => {
           `/api/announcement/announcements/project-name/${id}`,
           {
             method: "GET",
-            headers: { 
+            headers: {
               "Content-Type": "application/json",
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
             },
           }
         );
@@ -267,9 +267,9 @@ const AnnouncementReviewPage = () => {
         addToast("Candidato selezionato", "success");
         await fetch(`/api/announcement/candidates/${announcement.id}`, {
           method: "DELETE",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         });
         setStatus("InProgress");
@@ -288,13 +288,16 @@ const AnnouncementReviewPage = () => {
       ...prev,
       freelancer: {
         address: c.id,
-        nickname: c.name
+        nickname: c.name,
       },
-      }))
+    }));
   };
 
   const requirePresentation = async (announcementId) => {
-    setIsActionLoading({state: true, message: "Richiesta di revisione\ncontrolla il wallet MetaMask"});
+    setIsActionLoading({
+      state: true,
+      message: "Richiesta di revisione\ncontrolla il wallet MetaMask",
+    });
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
@@ -315,12 +318,15 @@ const AnnouncementReviewPage = () => {
     } catch (err) {
       addToast("Errore durante la transazione", "error");
     } finally {
-      setIsActionLoading({...isActionLoading, state: false});
+      setIsActionLoading({ ...isActionLoading, state: false });
     }
   };
 
   const submitJudgment = async (announcementId) => {
-    setIsActionLoading({state: true, message: "Invia giudizio\ncontrolla il wallet MetaMask"});
+    setIsActionLoading({
+      state: true,
+      message: "Invia giudizio\ncontrolla il wallet MetaMask",
+    });
     try {
       switch (judgment) {
         case "completed":
@@ -352,7 +358,9 @@ const AnnouncementReviewPage = () => {
                   method: "DELETE",
                   headers: {
                     "Content-Type": "application/json",
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    Authorization: `Bearer ${localStorage.getItem(
+                      "accessToken"
+                    )}`,
                   },
                 }
               );
@@ -430,7 +438,9 @@ const AnnouncementReviewPage = () => {
                   method: "DELETE",
                   headers: {
                     "Content-Type": "application/json",
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    Authorization: `Bearer ${localStorage.getItem(
+                      "accessToken"
+                    )}`,
                   },
                 }
               );
@@ -482,7 +492,7 @@ const AnnouncementReviewPage = () => {
       console.error("Errore invio giudizio:", err);
       addToast("Errore durante l'invio del giudizio", "error");
     } finally {
-      setIsActionLoading({...isActionLoading, state: false});
+      setIsActionLoading({ ...isActionLoading, state: false });
     }
   };
 
@@ -861,8 +871,43 @@ const AnnouncementReviewPage = () => {
             <div style={{ marginTop: "20px" }}>
               <button
                 className="btn primary"
-                onClick={() => {
-                  window.location.href = `/api/announcement/project-download/${announcement.id}/${workFile}`;
+                onClick={async () => {
+                  try {
+                    const url = `/api/announcement/project-download/${announcement.id}/${workFile}`;
+
+                    const response = await fetch(url, {
+                      method: "GET",
+                      headers: {
+                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+                      },
+                    });
+
+                    if (!response.ok) {
+                      throw new Error("Errore durante il download del file");
+                    }
+
+
+                    const blob = await response.blob();
+
+
+                    const downloadUrl = window.URL.createObjectURL(blob);
+
+
+                    const link = document.createElement("a");
+                    link.href = downloadUrl;
+
+
+                    link.setAttribute("download", workFile);
+
+                    document.body.appendChild(link);
+                    link.click();
+
+
+                    link.remove();
+                    window.URL.revokeObjectURL(downloadUrl);
+                  } catch (error) {
+                    console.error("Download fallito:", error);
+                  }
                 }}
               >
                 Scarica Progetto

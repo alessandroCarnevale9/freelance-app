@@ -14,16 +14,21 @@ import AnnouncementListPage from './pages/announcementsList/AnnouncementListPage
 import AnnouncementDetailsPage from './pages/announcementDetails/AnnouncementDetailsPage';
 import AnnouncementReviewPage from './pages/announcementReviewClient/AnnouncementReviewPage';
 import AnnouncementReviewFreelancerPage from './pages/announcementReviewFreelancer/AnnouncementReviewFreelancerPage';
+import AnnouncementEditPage from './pages/announcementEdit/AnnouncementEditPage';
 
 // Componente per proteggere le route che richiedono autenticazione
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, role }) => {
   const { user } = useAuthContext();
 
   if (!user) {
     return <Navigate to="/" replace />;
   }
 
-  return children;
+  if(role == user.role) {
+    return children
+  } else {
+    return <Navigate to="/" replace />;
+  }
 };
 
 // Componente per reindirizzare utenti già loggati dalla home
@@ -31,7 +36,6 @@ const PublicRoute = ({ children }) => {
   const { user } = useAuthContext();
 
   if (user) {
-    console.log('PublicRoute - User data:', user);
     // Reindirizza alla dashboard appropriata in base al ruolo
     if (user.role === 'FREELANCER') {
       return <Navigate to="/freelancer-dashboard" replace />;
@@ -88,7 +92,7 @@ function App() {
             <Route
               path="/freelancer-dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute role="FREELANCER">
                   <FreelancerDashboard />
                 </ProtectedRoute>
               }
@@ -97,7 +101,7 @@ function App() {
             <Route
               path="/client-dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute role="CLIENT">
                   <Dashboard />
                 </ProtectedRoute>
               }
@@ -107,8 +111,17 @@ function App() {
             <Route
               path="/dashboard/announcement-creation"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute role="CLIENT">
                   <AnnouncementCreationPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/dashboard/announcement-edit/:id"
+              element={
+                <ProtectedRoute role="CLIENT">
+                  <AnnouncementEditPage />
                 </ProtectedRoute>
               }
             />
@@ -116,7 +129,7 @@ function App() {
             <Route
               path="/announcements-list"
               element = {
-                <ProtectedRoute>
+                <ProtectedRoute role="FREELANCER">
                   <AnnouncementListPage />
                 </ProtectedRoute>
               }
@@ -125,7 +138,7 @@ function App() {
             <Route
               path="/announcements-list/:id"
               element = {
-                <ProtectedRoute>
+                <ProtectedRoute role="FREELANCER">
                   <AnnouncementDetailsPage />
                 </ProtectedRoute>
               }
@@ -134,7 +147,7 @@ function App() {
             <Route
               path="/client-dashboard/announcement/:id"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute role="CLIENT">
                   <AnnouncementReviewPage />
                 </ProtectedRoute>
               }
@@ -143,7 +156,7 @@ function App() {
             <Route
               path='/freelancer-dashboard/announcement/:id'
               element={
-                <ProtectedRoute>
+                <ProtectedRoute role="FREELANCER">
                   <AnnouncementReviewFreelancerPage />
                 </ProtectedRoute>
               }
@@ -162,7 +175,7 @@ function App() {
             <Route
               path="/profile/edit"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute role="FREELANCER">
                   <ProfileEdit />
                 </ProtectedRoute>
               }
