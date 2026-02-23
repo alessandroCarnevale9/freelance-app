@@ -1,0 +1,518 @@
+:root {
+    --bg: #f5f8fb;
+    --card: #fff;
+    --muted: #6b7b88;
+    --primary: #16a0d0;
+    --box: #eaf4f9;
+    --pill-bg: #eef6fb;
+    --shadow: rgba(30, 40, 50, 0.05);
+}
+
+.announce-details-page {
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 40px;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    color: #172133;
+    box-sizing: border-box;
+}
+
+.details-card {
+    max-width: 920px;
+    margin: 0 auto;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 26px;
+    box-shadow: 0 8px 24px var(--shadow);
+    border: 1px solid rgba(10, 30, 50, 0.04);
+}
+
+.details-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 18px;
+}
+
+.details-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.client-name {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.meta-row {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.meta-box {
+    background: var(--box);
+    padding: 12px 16px;
+    border-radius: 8px;
+    min-width: 200px;
+    flex: 1;
+}
+
+.meta-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.meta-value {
+    font-weight: 700;
+    color: #23333d;
+}
+
+/* sections */
+.section {
+    margin-top: 18px;
+}
+
+.section h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+}
+
+.description {
+    margin: 0 0 6px 0;
+    color: #344955;
+    line-height: 1.6;
+}
+
+/* skills */
+.skills-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.skill-pill {
+    background: var(--pill-bg);
+    color: #1b5570;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* requirements */
+.requirements-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0 0;
+}
+
+.requirement-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(10, 30, 50, 0.04);
+}
+
+.requirement-item .req-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: #e6f7fb;
+    color: var(--primary);
+    border-radius: 50%;
+    font-weight: 700;
+}
+
+.requirement-item .req-text {
+    color: #2f3f47;
+}
+
+.req-completed-badge {
+    margin-left: auto;
+    background-color: #e6f7ee;
+    color: #0b7a3d;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* footer actions */
+.details-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.btn {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: transparent;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.btn.primary {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+}
+
+.btn.ghost {
+    background: transparent;
+    color: #123;
+}
+
+/* small helpers */
+.muted {
+    color: var(--muted);
+}
+
+.small {
+    font-size: 13px;
+}
+
+.toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+}
+
+/* candidates section */
+.candidates-section {
+    padding-top: 16px;
+}
+
+.candidates-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.candidates-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.count-bubble {
+    background: #eef6fb;
+    color: #137ea8;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.candidates-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.candidate-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fbfeff;
+    border: 1px solid rgba(10, 30, 50, 0.04);
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.candidate-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #eaf6fb, #dff3f9);
+    color: #0b6b89;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+}
+
+.candidate-meta .candidate-name {
+    font-weight: 700;
+}
+
+.candidate-meta .muted {
+    color: #6b7b88;
+    font-size: 13px;
+}
+
+/* status badges */
+.status-badge {
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 84px;
+    text-align: center;
+}
+
+.status-badge.pending {
+    background: #f0fbff;
+    color: #0b6b89;
+    border: 1px solid rgba(6, 130, 160, 0.08);
+}
+
+.status-badge.accepted {
+    background: #e6f7ee;
+    color: #0b7a3d;
+}
+
+.status-badge.rejected {
+    background: #fdecea;
+    color: #c23a2b;
+}
+
+/* candidate skills */
+.candidate-skills {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.candidate-skill {
+    background: #eef6fb;
+    color: #0b6b89;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* candidates card */
+.candidates-card {
+    max-width: 920px;
+    margin: 20px auto 0;
+    /* staccato dalla details-card */
+    background: var(--card);
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 8px 24px var(--shadow);
+    border: 1px solid rgba(10, 30, 50, 0.04);
+}
+
+/* right column with button */
+.candidate-right {
+    margin-left: 12px;
+    display: flex;
+    align-items: center;
+}
+
+/* view profile button */
+.view-profile-btn {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* pulsante "Scegli candidato" (stile ghost a sinistra) */
+.choose-btn {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid rgba(22, 160, 208, 0.16);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.choose-btn:hover {
+    opacity: 0.95;
+}
+
+/* announce status */
+.announce-status {
+    margin-bottom: 8px;
+}
+
+.status-pill {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+    color: #fff;
+}
+
+/* state colors (adjust to taste) */
+.status-pill.aperto,
+.status-pill.open,
+.status-pill.inprogress,
+.status-pill.inprogress_sent  {
+    background: #16a0d0;
+}
+
+.status-pill.presentation {
+    background: #f59e0b;
+}
+
+.status-pill.completed,
+.status-pill.completato {
+    background: #10b981;
+}
+
+/* fallback neutral */
+.status-pill:not(.aperto):not(.open):not(.inprogress):not(.inprogress_sent):not(.presentation):not(.completed):not(.completato) {
+    background: #ccc;
+    color: #333;
+}
+
+/* Stili specifici per il modulo di invio del lavoro */
+.work-submission-form {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Stile per il pulsante di caricamento file personalizzato */
+.file-upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background-color: var(--bg);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.file-upload-label:hover {
+    background-color: var(--box);
+    border-color: var(--primary);
+}
+
+.file-upload-label .file-name {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Nascondi l'input file di default */
+.work-submission-form input[type="file"] {
+    display: none;
+}
+
+/* responsive */
+@media (max-width: 760px) {
+    .details-card {
+        padding: 18px;
+    }
+
+    .meta-row {
+        flex-direction: column;
+    }
+
+    .meta-box {
+        min-width: auto;
+    }
+
+    .requirements-list .req-badge {
+        width: 26px;
+        height: 26px;
+        font-size: 13px;
+    }
+
+    .toast-container {
+        left: 12px;
+        right: 12px;
+        max-width: none;
+    }
+}
+
+@media (max-width: 560px) {
+    .candidate-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .candidate-right {
+        align-self: flex-end;
+    }
+
+    /* Stili specifici per il modulo di invio del lavoro */
+
+    .work-submission-form {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    /* Stile per il pulsante di caricamento file personalizzato */
+    .file-upload-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 20px;
+        background-color: var(--bg);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s;
+        font-weight: 600;
+        color: var(--muted);
+    }
+
+    .file-upload-label:hover {
+        background-color: var(--box);
+        border-color: var(--primary);
+    }
+
+    .file-upload-label .upload-icon {
+        font-size: 22px;
+    }
+
+    .file-upload-label .file-name {
+        color: var(--primary);
+        font-weight: 700;
+    }
+
+    /* Nascondi l'input file di default */
+    .work-submission-form input[type="file"] {
+        display: none;
+    }
+}

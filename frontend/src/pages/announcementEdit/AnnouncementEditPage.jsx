@@ -1,12 +1,12 @@
-import { useState, useRef } from "react";
-import "./AnnouncementCreationPage.css";
+import { useState, useRef, useEffect } from "react";
+import "./AnnouncementEditPage.css";
 import { ethers } from "ethers";
-import { useNavigate } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import Toast from "../../components/toast/Toast";
 import FreelanceABI from "../../../../contract/artifacts/contracts/Freelance.sol/Freelance.json";
 
-const AnnouncementCreationPage = () => {
-
+const AnnouncementEditPage = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
@@ -21,6 +21,95 @@ const AnnouncementCreationPage = () => {
   const [toasts, setToasts] = useState([]);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const dateRef = useRef(null);
+
+    useEffect(() => {
+      if (!id) return setIsActionLoading(false);
+      let ignore = false;
+  
+      const fetchData = async () => {
+        setIsActionLoading(true);
+  
+        try {
+          const res = await fetch(
+            `/api/announcement/announcements/client-details/${id}`,
+            {
+              method: "GET",
+              headers: { 
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+              },
+            }
+          );
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const json = await res.json();
+          if (json.errors)
+            throw new Error(json.errors.map((e) => e.message).join(", "));
+          const data = json;
+          if (!data) throw new Error("Annuncio non trovato");
+  
+          if (ignore) return;
+  
+          const formattedCandidates = data.candidates.map((c) => {
+            return {
+              id: c.address,
+              name: c.nickname || "",
+              projects: c.projects.length || 0,
+              skills: c.keySkills || [],
+            };
+          });
+  
+          const announcementData = data.announcement;
+
+          setTitle(announcementData.title || "");
+          setDescription(announcementData.summary || "");
+          setSkills(announcementData.skills || []);
+          setBudget(announcementData.budget || "");
+
+          let formattedDeadline = "";
+          if (announcementData.deadline) {
+            let val = announcementData.deadline;
+            if (!isNaN(val) && String(val).trim() !== "") {
+              let ts = Number(val);
+              if (ts < 1e12) ts *= 1000; // Converte secondi in ms se necessario
+              val = ts;
+            }
+            const d = new Date(val);
+            if (!isNaN(d.getTime())) formattedDeadline = d.toISOString().split("T")[0];
+          }
+          setDeadline(formattedDeadline);
+          setRequirements(announcementData.requirements || []);
+          setErrors({});
+  
+        //   setAnnouncement({
+        //     id: announcementData.id,
+        //     title: announcementData.title || `Annuncio #${announcementData.id}`,
+        //     summary: announcementData.summary || "",
+        //     skills: announcementData.skills || [],
+        //     requirements: announcementData.requirements || [],
+        //     budget:
+        //       announcementData.budget != null
+        //         ? String(announcementData.budget).includes(".")
+        //           ? announcementData.budget
+        //           : ethers.utils.formatEther(announcementData.budget)
+        //         : "—",
+        //     deadline: announcementData.deadline || null,
+        //     createdAt: announcementData.createdAt || null,
+        //     freelancer: announcementData.freelancer,
+        //     status: announcementData.status || "Open",
+        //   });
+        } catch (err) {
+          if (ignore) return;
+          console.error("fetch announcement error", err);
+        } finally {
+          if (!ignore) setIsActionLoading(false);
+        }
+      };
+  
+      fetchData();
+      return () => {
+        ignore = true;
+      };
+    }, [id]);
 
   const addToast = (message, type = "error") => {
     const id = Date.now();
@@ -132,7 +221,7 @@ const AnnouncementCreationPage = () => {
       title,
       description,
       requirements,
-      skills
+      skills,
     };
 
     let uploadedCID = null;
@@ -158,7 +247,7 @@ const AnnouncementCreationPage = () => {
       );
 
       await tx.wait();
-  
+
       addToast("Annuncio creato con successo!", "success");
 
       setTimeout(() => navigate("/dashboard"), 2000);
@@ -389,7 +478,11 @@ const AnnouncementCreationPage = () => {
         <div className="loading-overlay">
           <div className="loading-box">
             <div className="spinner"></div>
-            <div className="loading-text">Creazione annuncio in corso<br />controlla il tuo wallet MetaMask</div>
+            <div className="loading-text">
+              Creazione annuncio in corso
+              <br />
+              controlla il tuo wallet MetaMask
+            </div>
           </div>
         </div>
       )}
@@ -397,4 +490,4 @@ const AnnouncementCreationPage = () => {
   );
 };
 
-export default AnnouncementCreationPage;
+export default AnnouncementEditPage;

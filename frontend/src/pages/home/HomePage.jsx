@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   BusinessIcon,
   DollarCircle,
@@ -15,9 +15,13 @@ import {
 
 import "./HomePage.css";
 import Carousel from "../../components/carousel/Carousel";
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
   const [isMobile, setIsMobile] = useState(false);
+  const aboutRef = useRef(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
@@ -123,13 +127,23 @@ const HomePage = () => {
       </section>
 
       <nav className="home-page-buttons">
-        <button className="btn-primary">Sono un freelancer</button>
-        <button className="btn-secondary">Cerco talenti</button>
+        <button
+          className="btn-primary"
+          onClick={() => {
+            if (aboutRef.current) {
+              const offset = 80;
+              const top = aboutRef.current.getBoundingClientRect().top + window.pageYOffset - offset;
+              window.scrollTo({ top, behavior: "smooth" });
+            }
+          }}
+        >
+          Esplora il procedimento
+        </button>
       </nav>
 
       <div className="home-page-separator" />
 
-      <section className="home-page-about">
+      <section className="home-page-about" ref={aboutRef} id="come-funziona">
         <h2>Come funziona</h2>
 
         {isMobile ? (

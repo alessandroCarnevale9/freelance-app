@@ -8,7 +8,7 @@ const {
     deleteUser,
     uploadProjectImages
 } = require('../controllers/userController');
-const { validateUser } = require('../middlewares/userValidation');
+
 const verifyJWT = require('../middlewares/verifyJWT');
 
 // Configurazione Multer per upload immagini

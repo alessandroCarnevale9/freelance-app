@@ -8,7 +8,7 @@ class Database {
     this.options = options
   }
 
-  async connect(_bucketName) {
+  async connect() {
     try {
       await mongoose.connect(this.uri, this.options)
       console.log(
@@ -16,9 +16,13 @@ class Database {
       )
       const db = mongoose.connection.db;
   
-      return new GridFSBucket(db, {
-          bucketName: _bucketName
+      const imagesBucket = new GridFSBucket(db, {
+          bucketName: "images"
       });
+      const projectsBucket = new GridFSBucket(db, {
+          bucketName: "projects"
+      });
+      return { imagesBucket, projectsBucket };
     } catch (error) {
       throw error
     }
